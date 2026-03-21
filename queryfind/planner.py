@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 import json
 import re
+import time
 
 from queryfind.config import AppConfig
 from queryfind.logging_utils import RunLogger
@@ -89,6 +90,7 @@ def plan_search(
             logger=logger,
             label="Streaming planner thinking",
             messages=messages,
+            force_stream=False,
         )
         payload = _extract_json_object(response)
         if payload is None:
@@ -173,6 +175,7 @@ def rank_results(
             logger=logger,
             label="Streaming ranking thinking",
             messages=messages,
+            force_stream=False,
         )
         payload = _extract_json_object(response)
         if payload is None:
@@ -313,6 +316,7 @@ def next_agent_action(
             logger=logger,
             label="Streaming agent-step thinking",
             messages=messages,
+            force_stream=True,
         )
         payload = _extract_json_object(response)
         action = _parse_agent_action(payload)
@@ -381,8 +385,9 @@ def _stream_completion(
     logger: RunLogger,
     label: str,
     messages: list[dict[str, str]],
+    force_stream: bool,
 ) -> str:
-    if not config.show_thinking:
+    if not config.show_thinking and not force_stream:
         logger.info(f"{label} (non-streaming JSON mode)")
         return client.chat_json(
             model=config.model,
@@ -390,16 +395,27 @@ def _stream_completion(
             think=resolve_think_value(config.model, config.think_level),
         )
 
-    logger.start_stream(label)
+    if config.show_thinking:
+        logger.start_stream(label)
+    else:
+        logger.info(f"{label} (streaming diagnostics mode)")
     thinking_seen = False
     content_seen = False
     content_parts: list[str] = []
+    chunk_count = 0
+    char_count = 0
+    first_chunk_ms: float | None = None
+    started_at = time.perf_counter()
     try:
         for chunk in client.chat_stream(
             model=config.model,
             messages=messages,
             think=resolve_think_value(config.model, config.think_level),
         ):
+            if chunk.thinking or chunk.content:
+                chunk_count += 1
+                if first_chunk_ms is None:
+                    first_chunk_ms = (time.perf_counter() - started_at) * 1000.0
             if config.show_thinking and chunk.thinking:
                 thinking_seen = True
                 logger.write_stream(chunk.thinking)
@@ -407,10 +423,22 @@ def _stream_completion(
                 if config.show_thinking and thinking_seen and not content_seen:
                     logger.write_stream("\n\nFinal response:\n")
                 content_seen = True
-                logger.write_stream(chunk.content)
+                if config.show_thinking:
+                    logger.write_stream(chunk.content)
                 content_parts.append(chunk.content)
+                char_count += len(chunk.content)
+    except OllamaUnavailableError as exc:
+        if not config.show_thinking:
+            logger.info(_stream_diagnostic_summary(first_chunk_ms, chunk_count, char_count, completed=False))
+        if content_parts:
+            logger.warn(f"{label} ended before completion; attempting to use partial streamed output: {exc}")
+            return "".join(content_parts).strip()
+        raise
     finally:
-        logger.end_stream()
+        if config.show_thinking:
+            logger.end_stream()
+    if not config.show_thinking:
+        logger.info(_stream_diagnostic_summary(first_chunk_ms, chunk_count, char_count, completed=True))
     return "".join(content_parts).strip()
 
 
@@ -494,6 +522,21 @@ def _root_overview_snapshot(root_overview: str, *, limit: int = 400) -> str:
     if len(compact) <= limit:
         return compact
     return compact[:limit].rstrip() + "..."
+
+
+def _stream_diagnostic_summary(
+    first_chunk_ms: float | None,
+    chunk_count: int,
+    char_count: int,
+    *,
+    completed: bool,
+) -> str:
+    first_chunk_text = "-" if first_chunk_ms is None else f"{first_chunk_ms:.1f}"
+    status = "completed" if completed else "interrupted"
+    return (
+        "stream diagnostics: "
+        f"status={status} first_chunk_ms={first_chunk_text} chunks={chunk_count} chars={char_count}"
+    )
 
 
 def _dedupe_terms(items: list[str]) -> list[str]:

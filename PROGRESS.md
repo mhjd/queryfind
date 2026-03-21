@@ -31,3 +31,5 @@
 - Removed automatic heuristic fallback from LLM mode so timeouts and invalid model output no longer masquerade as model success.
 - Shrunk the agent and ranking prompts to reduce Qwen payload size and make timeout behavior easier to diagnose.
 - Validated the stricter LLM path with `python3 -m queryfind.benchmark --model qwen3.5:27b --case latest_redwood_contract --quiet`, which now reports an honest 0/1 with one timed-out agent turn budget and no heuristic rescue.
+- Changed the agent-step path to stream silently even in hidden-thinking mode and log diagnostics such as first-chunk latency, chunk count, and character count.
+- Validated the streamed diagnostics path with `python3 -m queryfind.benchmark --model qwen3.5:27b --case latest_redwood_contract --quiet`; the current Qwen case shows `first_chunk_ms=-`, `chunks=0`, and `chars=0` before the 12 second timeout, which means no streamed output arrived at all.

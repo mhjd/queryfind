@@ -9,10 +9,10 @@ from unittest import mock
 
 from queryfind.app import execute_search
 from queryfind.config import AppConfig
-from queryfind.ollama_client import OllamaClient
+from queryfind.ollama_client import OllamaChunk, OllamaClient, OllamaUnavailableError
 from queryfind.benchmark import load_manifest, run_benchmark
 from queryfind.models import SearchCandidate
-from queryfind.planner import heuristic_intent
+from queryfind.planner import heuristic_intent, next_agent_action
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
 from queryfind.synthetic_eval import run_eval
@@ -147,6 +147,63 @@ class QueryFindTests(unittest.TestCase):
             logger.close()
         self.assertEqual(outcome.ranking_source, "backend")
         self.assertEqual([item.path for item in outcome.results], [Path("/tmp/a.txt"), Path("/tmp/b.txt")])
+
+    def test_agent_step_uses_streaming_in_hidden_thinking_mode(self) -> None:
+        class FakeStreamingClient:
+            def chat_stream(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
+                del model, messages, think
+                yield OllamaChunk(content='{"action":"finish","terms":[],"extensions":[],"reasoning":"done","final_summary":"done"}')
+
+            def chat_json(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
+                del model, messages, think
+                raise AssertionError("chat_json should not be called for agent steps in hidden-thinking mode")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = RunLogger(Path(tmpdir) / "test.log", echo=False)
+            try:
+                action = next_agent_action(
+                    "find contract",
+                    root_overview="contracts notes",
+                    candidates=[],
+                    steps=[],
+                    config=AppConfig(query="find contract", root=Path(tmpdir), no_llm=False, show_thinking=False),
+                    logger=logger,
+                    client=FakeStreamingClient(),  # type: ignore[arg-type]
+                )
+            finally:
+                logger.close()
+            self.assertEqual(action.action, "finish")
+            self.assertEqual(action.source, "ollama")
+            log_text = (Path(tmpdir) / "test.log").read_text(encoding="utf-8")
+            self.assertIn("streaming diagnostics mode", log_text)
+            self.assertIn("stream diagnostics: status=completed", log_text)
+
+    def test_agent_step_can_use_partial_streamed_json_before_timeout(self) -> None:
+        class FakePartialStreamingClient:
+            def chat_stream(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
+                del model, messages, think
+                yield OllamaChunk(content='{"action":"finish","terms":[],"extensions":[],"reasoning":"done","final_summary":"done"}')
+                raise OllamaUnavailableError("timed out")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = RunLogger(Path(tmpdir) / "test.log", echo=False)
+            try:
+                action = next_agent_action(
+                    "find contract",
+                    root_overview="contracts notes",
+                    candidates=[],
+                    steps=[],
+                    config=AppConfig(query="find contract", root=Path(tmpdir), no_llm=False, show_thinking=False),
+                    logger=logger,
+                    client=FakePartialStreamingClient(),  # type: ignore[arg-type]
+                )
+            finally:
+                logger.close()
+            self.assertEqual(action.action, "finish")
+            self.assertEqual(action.source, "ollama")
+            log_text = (Path(tmpdir) / "test.log").read_text(encoding="utf-8")
+            self.assertIn("stream diagnostics: status=interrupted", log_text)
+            self.assertIn("attempting to use partial streamed output", log_text)
 
     def test_ollama_client_can_attempt_autostart(self) -> None:
         client = OllamaClient("http://127.0.0.1:11434")

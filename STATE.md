@@ -4,6 +4,7 @@
 
 Bounded agent loop implemented and validated in heuristic mode.
 Automatic heuristic fallback has been removed from LLM mode so benchmark and runtime behavior stay honest.
+Agent steps now stream even in hidden-thinking mode so timeout diagnosis can distinguish "no output at all" from "partial progress".
 
 ## Active Task
 
