@@ -1,0 +1,5 @@
+Shipment 8842 status log.
+
+2025-02-15 08:10 packed at warehouse
+2025-02-15 12:45 departed local hub
+2025-02-16 09:20 delayed pending carrier review

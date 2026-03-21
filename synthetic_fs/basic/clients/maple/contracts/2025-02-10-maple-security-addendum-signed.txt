@@ -1,0 +1,6 @@
+Maple Retail security addendum.
+
+Status: signed
+Client: Maple Retail
+Signed by Maple Retail on 2025-02-10.
+This addendum covers MFA enforcement and audit log retention.

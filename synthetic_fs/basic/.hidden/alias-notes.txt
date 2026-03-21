@@ -1,0 +1,4 @@
+Internal alias notes.
+
+PineGlass is the codename used for the lakeside cabin network refresh.
+Northstar is the codename used for the warehouse migration.

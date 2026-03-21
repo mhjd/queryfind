@@ -10,6 +10,9 @@
 - Added automatic `ollama serve` startup so the CLI no longer depends on manual server launch.
 - Added early fallback when Ollama is reachable but no local model is installed.
 - Switched the project default Ollama model from `gpt-oss:20b` to `qwen3:30b-a3b`.
+- Added a small synthetic filesystem under `synthetic_fs/basic/` for early end-to-end validation.
+- Added `python -m queryfind.synthetic_eval` and a `make synthetic-eval` target to verify basic search and light reasoning cases.
+- Validated the synthetic corpus locally with `python3 -m queryfind.synthetic_eval`, passing 6 out of 6 heuristic cases.
 - Added timestamped logging, root inspection, allowlisted command execution, heuristic planning, candidate scoring, and ranked result rendering.
 - Added smoke tests for the heuristic planner, command allowlist enforcement, and the CLI search path.
 - Validated the baseline locally with `python3 -m unittest discover -s tests -v`, `python3 -m queryfind --doctor`, and one end-to-end auto-start run outside the sandbox.

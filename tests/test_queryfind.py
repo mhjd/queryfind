@@ -11,6 +11,7 @@ from queryfind.ollama_client import OllamaClient
 from queryfind.planner import heuristic_intent
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
+from queryfind.synthetic_eval import run_eval
 
 
 class QueryFindTests(unittest.TestCase):
@@ -76,6 +77,11 @@ class QueryFindTests(unittest.TestCase):
                 started = client.ensure_running(timeout=1.0, server_log_path=log_path)
             self.assertTrue(started)
             popen_mock.assert_called_once()
+
+    def test_synthetic_eval_passes_without_llm(self) -> None:
+        results = run_eval(use_llm=False)
+        failed = [result.case.name for result in results if not result.success]
+        self.assertEqual(failed, [], msg=f"failed synthetic cases: {failed}")
 
 
 if __name__ == "__main__":

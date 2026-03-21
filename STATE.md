@@ -13,6 +13,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 - path and content search
 - streaming-friendly local Ollama integration
 - richer ranked results
+- synthetic filesystem smoke evaluation
 
 ## Assumptions
 
@@ -24,6 +25,6 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 ## Next Steps
 
 1. Install and validate a real local model so streamed planning and ranking can run end to end after auto-start.
-2. Improve ranking quality on real-world directories with prompt and scoring refinements.
+2. Improve ranking quality on the synthetic corpus and real-world directories with prompt and scoring refinements.
 3. Add stronger file-type handling for formats like PDF and Office documents.
-4. Expand tests around metadata handling, planner parsing, and auto-start edge cases.
+4. Expand the synthetic corpus with harder multi-file reasoning cases after the first benchmark-free filter is stable.

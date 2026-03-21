@@ -11,6 +11,7 @@ from typing import TextIO
 @dataclass(slots=True)
 class RunLogger:
     log_path: Path
+    echo: bool = True
     _handle: TextIO = field(init=False, repr=False)
     _stream_open: bool = field(init=False, default=False, repr=False)
 
@@ -54,12 +55,14 @@ class RunLogger:
             self._stream_open = False
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         line = f"{timestamp} {level:<5} {message}"
-        print(line)
+        if self.echo:
+            print(line)
         self._handle.write(line + "\n")
         self._handle.flush()
 
     def _write_stream(self, text: str, end: str) -> None:
-        sys.stdout.write(text + end)
-        sys.stdout.flush()
+        if self.echo:
+            sys.stdout.write(text + end)
+            sys.stdout.flush()
         self._handle.write(text + end)
         self._handle.flush()

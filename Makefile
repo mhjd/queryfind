@@ -3,7 +3,7 @@ VENV ?= .venv
 PIP := $(VENV)/bin/pip
 RUN := $(VENV)/bin/python
 
-.PHONY: help venv doctor search test
+.PHONY: help venv doctor search synthetic-eval test
 
 help: ## Show available project commands
 	@grep -E '^[a-zA-Z_-]+:.*## ' Makefile | sed 's/:.*## / - /'
@@ -18,6 +18,9 @@ doctor: ## Check required local tools and Ollama availability
 
 search: ## Run an example heuristic search against the current directory
 	$(RUN) -m queryfind "find project files about search commands" --root . --no-llm
+
+synthetic-eval: ## Run the basic synthetic filesystem evaluation
+	$(RUN) -m queryfind.synthetic_eval
 
 test: ## Run the unit and CLI smoke tests
 	$(RUN) -m unittest discover -s tests -v

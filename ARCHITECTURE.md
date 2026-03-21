@@ -13,7 +13,9 @@
   - `planner.py`: heuristic planning plus optional LLM planning and ranking.
   - `search_backend.py`: allowlisted command runner and file-system search pipeline.
   - `render.py`: terminal result rendering with Rich when available.
+  - `synthetic_eval.py`: small first-filter evaluation runner for the synthetic corpus.
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
+- `synthetic_fs/`: small static synthetic filesystem for early search validation.
 - `pyproject.toml`: package metadata and pinned runtime dependency declaration.
 - `Makefile`: project commands.
 - `PROJECT.md`: product scope and command policy.
@@ -31,6 +33,12 @@
 7. Merge and score candidate files from path and content evidence.
 8. Ask the local model to rank and summarize candidates when available.
 9. Render ranked results and keep a timestamped log file.
+
+## Synthetic Validation
+
+- `synthetic_fs/basic/` provides a small local directory tree with contracts, runbooks, project notes, onboarding files, and hidden notes.
+- `queryfind.synthetic_eval` resets corpus mtimes, runs representative search cases, and verifies the expected file appears in the top results.
+- The synthetic evaluation is a first filter for concrete environment checks before a later benchmark is added.
 
 ## Safety Model
 

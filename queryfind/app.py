@@ -10,6 +10,46 @@ from queryfind.render import render_intent, render_outcome
 from queryfind.search_backend import SearchBackend
 
 
+def resolve_search_client(config: AppConfig, logger: RunLogger, *, timestamp: str) -> OllamaClient | None:
+    client = None if config.no_llm else OllamaClient(config.ollama_url)
+    llm_available = False
+    if client is not None:
+        llm_available = client.available()
+        if llm_available:
+            logger.info("local Ollama server available")
+        elif config.ollama_autostart:
+            server_log_path = logger.log_path.parent / f"ollama-serve-{timestamp}.log"
+            logger.info("local Ollama server unavailable; attempting automatic startup")
+            llm_available = client.ensure_running(
+                timeout=config.ollama_start_timeout,
+                server_log_path=server_log_path,
+            )
+            if llm_available:
+                logger.info("local Ollama server started automatically")
+            else:
+                logger.warn("automatic Ollama startup failed; using heuristic fallback")
+        else:
+            logger.warn("local Ollama server unavailable; using heuristic fallback")
+        if llm_available:
+            try:
+                tags = client.tags()
+            except Exception:
+                tags = []
+            if not tags:
+                logger.warn("Ollama is running but no models are installed; using heuristic fallback")
+                llm_available = False
+            elif config.model not in tags:
+                logger.warn(f"configured model not installed locally: {config.model}")
+                llm_available = False
+        else:
+            client = None
+        if not llm_available:
+            client = None
+    else:
+        logger.info("LLM disabled by flag; using heuristic fallback")
+    return client
+
+
 def run_search(config: AppConfig) -> int:
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     logger = RunLogger(config.resolved_log_dir / f"queryfind-{timestamp}.log")
@@ -24,42 +64,7 @@ def run_search(config: AppConfig) -> int:
         if report.optional_missing:
             logger.warn(f"missing optional commands: {', '.join(report.optional_missing)}")
 
-        client = None if config.no_llm else OllamaClient(config.ollama_url)
-        llm_available = False
-        if client is not None:
-            llm_available = client.available()
-            if llm_available:
-                logger.info("local Ollama server available")
-            elif config.ollama_autostart:
-                server_log_path = logger.log_path.parent / f"ollama-serve-{timestamp}.log"
-                logger.info("local Ollama server unavailable; attempting automatic startup")
-                llm_available = client.ensure_running(
-                    timeout=config.ollama_start_timeout,
-                    server_log_path=server_log_path,
-                )
-                if llm_available:
-                    logger.info("local Ollama server started automatically")
-                else:
-                    logger.warn("automatic Ollama startup failed; using heuristic fallback")
-            else:
-                logger.warn("local Ollama server unavailable; using heuristic fallback")
-            if llm_available:
-                try:
-                    tags = client.tags()
-                except Exception:
-                    tags = []
-                if not tags:
-                    logger.warn("Ollama is running but no models are installed; using heuristic fallback")
-                    llm_available = False
-                elif config.model not in tags:
-                    logger.warn(f"configured model not installed locally: {config.model}")
-                    llm_available = False
-            else:
-                client = None
-            if not llm_available:
-                client = None
-        else:
-            logger.info("LLM disabled by flag; using heuristic fallback")
+        client = resolve_search_client(config, logger, timestamp=timestamp)
 
         logger.info("collecting root overview")
         root_overview = backend.inspect_root()
@@ -68,7 +73,7 @@ def run_search(config: AppConfig) -> int:
             root_overview=root_overview,
             config=config,
             logger=logger,
-            client=client if llm_available else None,
+            client=client,
         )
         render_intent(intent)
 
@@ -81,7 +86,7 @@ def run_search(config: AppConfig) -> int:
             candidates=candidates,
             config=config,
             logger=logger,
-            client=client if llm_available else None,
+            client=client,
         )
         render_outcome(outcome)
         logger.info(f"log file: {logger.log_path}")

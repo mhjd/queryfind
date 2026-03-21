@@ -69,6 +69,12 @@ Typical usage:
 python -m queryfind "find the latest signed contract for client beta"
 ```
 
+Synthetic evaluation usage:
+
+```bash
+python -m queryfind.synthetic_eval
+```
+
 Expected runtime flow:
 
 1. Show root inspection progress.
@@ -83,3 +89,4 @@ Expected runtime flow:
 - Homebrew-installed dependencies are acceptable for now.
 - Initial support is for the current macOS environment first.
 - Broader macOS compatibility and benchmark work will be handled later.
+- A small synthetic filesystem is included for early end-to-end validation before the later benchmark work exists.
