@@ -28,3 +28,6 @@
 - Changed backend command failures from silent log-only warnings into agent-visible observations that can be fed back into subsequent model turns.
 - Updated the benchmark runner to execute the new agent loop and report median agent steps, median LLM turns, and the percentage of cases where the model actually contributed turns.
 - Validated the new loop locally with `python3 -m unittest discover -s tests -v` and `python3 -m queryfind.benchmark --heuristic-baseline --case latest_redwood_contract --quiet`.
+- Removed automatic heuristic fallback from LLM mode so timeouts and invalid model output no longer masquerade as model success.
+- Shrunk the agent and ranking prompts to reduce Qwen payload size and make timeout behavior easier to diagnose.
+- Validated the stricter LLM path with `python3 -m queryfind.benchmark --model qwen3.5:27b --case latest_redwood_contract --quiet`, which now reports an honest 0/1 with one timed-out agent turn budget and no heuristic rescue.

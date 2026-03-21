@@ -11,6 +11,7 @@ from queryfind.app import execute_search
 from queryfind.config import AppConfig
 from queryfind.ollama_client import OllamaClient
 from queryfind.benchmark import load_manifest, run_benchmark
+from queryfind.models import SearchCandidate
 from queryfind.planner import heuristic_intent
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
@@ -102,6 +103,50 @@ class QueryFindTests(unittest.TestCase):
             self.assertGreaterEqual(len(execution.agent_steps), 2)
             self.assertTrue(execution.outcome.results)
             self.assertEqual(execution.agent_steps[0].action.action, "search_paths")
+
+    def test_execute_search_does_not_fallback_to_heuristic_when_llm_is_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "contracts").mkdir()
+            (root / "contracts" / "client-beta-signed-contract.txt").write_text(
+                "Signed contract for client beta.\n",
+                encoding="utf-8",
+            )
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                config = AppConfig(
+                    query="find the latest signed contract for client beta",
+                    root=root,
+                    no_llm=False,
+                    max_agent_steps=4,
+                )
+                execution = execute_search(config, logger, client=None)
+            finally:
+                logger.close()
+            self.assertEqual(len(execution.agent_steps), 1)
+            self.assertEqual(execution.agent_steps[0].action.action, "finish")
+            self.assertEqual(execution.agent_steps[0].action.source, "backend")
+            self.assertEqual(execution.outcome.results, [])
+
+    def test_ranking_without_llm_keeps_backend_order_without_heuristic_fallback(self) -> None:
+        from queryfind.planner import rank_results
+
+        config = AppConfig(query="find contract", root=Path("."), no_llm=False)
+        logger = RunLogger(Path(tempfile.gettempdir()) / "queryfind-test.log", echo=False)
+        try:
+            first = SearchCandidate(path=Path("/tmp/a.txt"), score=9.0)
+            second = SearchCandidate(path=Path("/tmp/b.txt"), score=4.0)
+            outcome = rank_results(
+                "find contract",
+                candidates=[first, second],
+                config=config,
+                logger=logger,
+                client=None,
+            )
+        finally:
+            logger.close()
+        self.assertEqual(outcome.ranking_source, "backend")
+        self.assertEqual([item.path for item in outcome.results], [Path("/tmp/a.txt"), Path("/tmp/b.txt")])
 
     def test_ollama_client_can_attempt_autostart(self) -> None:
         client = OllamaClient("http://127.0.0.1:11434")

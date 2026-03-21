@@ -55,3 +55,4 @@
 - The backend enforces an explicit executable allowlist.
 - Search is read-only.
 - Network use is limited to the local Ollama API.
+- Heuristic search remains available only as an explicit mode for tests and baselines; LLM mode no longer silently falls back to heuristic execution.

@@ -21,6 +21,7 @@ The current focus is still a reliable macOS-first product path, but the project 
   - evidence snippets
   - visible executed search steps for reproducibility
 - Work even when the local model is unavailable by falling back to deterministic heuristics.
+  This heuristic mode is now explicit via `--no-llm` for testing and baselines, not an automatic rescue path during model runs.
 
 ## V1 Technical Stack
 

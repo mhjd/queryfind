@@ -32,16 +32,16 @@ def resolve_search_client(config: AppConfig, logger: RunLogger, *, timestamp: st
             if llm_available:
                 logger.info("local Ollama server started automatically")
             else:
-                logger.warn("automatic Ollama startup failed; using heuristic fallback")
+                logger.warn("automatic Ollama startup failed")
         else:
-            logger.warn("local Ollama server unavailable; using heuristic fallback")
+            logger.warn("local Ollama server unavailable")
         if llm_available:
             try:
                 tags = client.tags()
             except Exception:
                 tags = []
             if not tags:
-                logger.warn("Ollama is running but no models are installed; using heuristic fallback")
+                logger.warn("Ollama is running but no models are installed")
                 llm_available = False
             elif config.model not in tags:
                 logger.warn(f"configured model not installed locally: {config.model}")
@@ -70,6 +70,10 @@ def run_search(config: AppConfig) -> int:
             logger.warn(f"missing optional commands: {', '.join(report.optional_missing)}")
 
         client = resolve_search_client(config, logger, timestamp=timestamp)
+        if not config.no_llm and client is None:
+            logger.error("LLM mode requested but the configured local model is unavailable")
+            logger.info(f"log file: {logger.log_path}")
+            return 2
         execution = execute_search(config, logger, backend=backend, client=client)
         if not execution.outcome.results:
             logger.warn("no files matched the current query")
@@ -128,9 +132,6 @@ def execute_search(
         logger.warn("agent loop reached the step limit; ranking current candidates")
 
     candidates = backend.finalize_candidates(by_path, sort_hint=sort_hint)
-    if not candidates and client is not None and any(step.action.source == "ollama" for step in steps):
-        logger.warn("LLM-guided agent loop found no candidates; retrying with deterministic heuristic pipeline")
-        candidates = backend.search(heuristic_intent(config.query or ""))
     agent_ms = (time.perf_counter() - agent_start) * 1000.0
 
     ranking_start = time.perf_counter()

@@ -3,6 +3,7 @@
 ## Status
 
 Bounded agent loop implemented and validated in heuristic mode.
+Automatic heuristic fallback has been removed from LLM mode so benchmark and runtime behavior stay honest.
 
 ## Active Task
 

@@ -125,41 +125,44 @@ def rank_results(
             results=[],
             ranking_source="heuristic",
         )
-    if config.no_llm or client is None:
+    if config.no_llm:
         return heuristic_ranking(query, candidates, limit=config.max_results)
+    if client is None:
+        return backend_order_ranking(
+            candidates,
+            limit=config.max_results,
+            summary=final_summary_hint or "LLM ranking unavailable; returning backend-ranked candidates.",
+            source="backend",
+        )
 
     candidate_blob = json.dumps(
         [
             {
                 "path": str(candidate.path),
                 "score": round(candidate.score, 2),
-                "reasons": candidate.reasons,
-                "snippets": candidate.snippets,
-                "mtime_epoch": candidate.mtime_epoch,
-                "size_bytes": candidate.size_bytes,
-                "kind": candidate.kind,
+                "reason": candidate.reasons[0] if candidate.reasons else "",
+                "snippet": candidate.snippets[0] if candidate.snippets else "",
             }
-            for candidate in candidates[:8]
+            for candidate in candidates[:5]
         ],
-        indent=2,
+        separators=(",", ":"),
     )
     messages = [
         {
             "role": "system",
             "content": (
-                "You are ranking local file search candidates. "
-                "Output only one JSON object with keys summary and results. "
-                "results must be an array of objects with keys path and why. "
-                "Keep the summary short and grounded in the evidence."
+                "Rank local file candidates. "
+                "Return JSON only: {\"summary\":\"...\",\"results\":[{\"path\":\"...\",\"why\":\"...\"}]}. "
+                "Use only listed paths. Keep summary and why very short."
             ),
         },
         {
             "role": "user",
             "content": (
-                f"Query:\n{query}\n\n"
-                f"Agent observations:\n{_trace_snapshot(agent_steps or [])}\n\n"
-                f"Candidate shortlist:\n{candidate_blob}\n\n"
-                f"Current best hypothesis:\n{final_summary_hint or '(none)'}"
+                f"q={query}\n"
+                f"trace={_trace_snapshot(agent_steps or [], limit=3)}\n"
+                f"hint={final_summary_hint or '-'}\n"
+                f"candidates={candidate_blob}"
             ),
         },
     ]
@@ -173,8 +176,13 @@ def rank_results(
         )
         payload = _extract_json_object(response)
         if payload is None:
-            logger.warn("Ranking JSON parse failed; falling back to heuristic ranking")
-            return heuristic_ranking(query, candidates, limit=config.max_results)
+            logger.warn("Ranking JSON parse failed; keeping backend-ranked candidates")
+            return backend_order_ranking(
+                candidates,
+                limit=config.max_results,
+                summary=final_summary_hint or "LLM ranking output was invalid; keeping backend-ranked candidates.",
+                source="backend",
+            )
         path_map = {str(candidate.path): candidate for candidate in candidates}
         ranked: list[SearchCandidate] = []
         for item in payload.get("results", []):
@@ -187,7 +195,12 @@ def rank_results(
                 candidate.reasons.insert(0, why)
             ranked.append(candidate)
         if not ranked:
-            return heuristic_ranking(query, candidates, limit=config.max_results)
+            return backend_order_ranking(
+                candidates,
+                limit=config.max_results,
+                summary=final_summary_hint or "LLM ranking produced no usable ordering; keeping backend-ranked candidates.",
+                source="backend",
+            )
         return SearchOutcome(
             summary=str(payload.get("summary") or final_summary_hint or "Ranked candidates from local evidence."),
             results=ranked[: config.max_results],
@@ -195,7 +208,12 @@ def rank_results(
         )
     except OllamaUnavailableError as exc:
         logger.warn(f"Ollama ranking unavailable: {exc}")
-        return heuristic_ranking(query, candidates, limit=config.max_results)
+        return backend_order_ranking(
+            candidates,
+            limit=config.max_results,
+            summary=final_summary_hint or "LLM ranking timed out; keeping backend-ranked candidates.",
+            source="backend",
+        )
 
 
 def heuristic_intent(query: str) -> SearchIntent:
@@ -229,6 +247,16 @@ def heuristic_ranking(query: str, candidates: list[SearchCandidate], *, limit: i
     return SearchOutcome(summary=summary, results=top[:limit], ranking_source="heuristic")
 
 
+def backend_order_ranking(
+    candidates: list[SearchCandidate],
+    *,
+    limit: int,
+    summary: str,
+    source: str,
+) -> SearchOutcome:
+    return SearchOutcome(summary=summary, results=candidates[:limit], ranking_source=source)
+
+
 def next_agent_action(
     query: str,
     *,
@@ -239,32 +267,42 @@ def next_agent_action(
     logger: RunLogger,
     client: OllamaClient | None,
 ) -> AgentAction:
-    heuristic = heuristic_next_action(query, steps)
-    if config.no_llm or client is None:
+    if config.no_llm:
         logger.info("Using heuristic agent action")
-        return heuristic
+        return heuristic_next_action(query, steps)
+    if client is None:
+        logger.warn("LLM unavailable for agent loop; finishing without heuristic fallback")
+        return AgentAction(
+            action="finish",
+            final_summary="LLM unavailable before the agent loop could run.",
+            reasoning="No local model response available.",
+            source="backend",
+        )
+
+    overview_section = _root_overview_snapshot(root_overview) if not steps else "-"
+    trace_section = _trace_snapshot(steps, limit=3)
+    candidate_section = _candidate_snapshot(candidates, limit=3)
 
     messages = [
         {
             "role": "system",
             "content": (
-                "You are driving a local file search agent. "
-                "Do not produce shell commands. "
-                "Choose exactly one next action and output only one JSON object with keys "
-                "action, terms, extensions, reasoning, final_summary. "
-                "action must be one of search_paths, search_contents, finish. "
-                "Use short terms arrays. "
-                "Use finish when the current evidence is sufficient or the answer is likely absent."
+                "Drive a local file search agent. "
+                "No shell commands. "
+                "Return JSON only: "
+                "{\"action\":\"search_paths|search_contents|finish\",\"terms\":[...],"
+                "\"extensions\":[...],\"reasoning\":\"...\",\"final_summary\":\"...\"}. "
+                "Prefer 1-2 short terms. Use finish when evidence is enough or likely absent."
             ),
         },
         {
             "role": "user",
             "content": (
-                f"User query:\n{query}\n\n"
-                f"Root overview:\n{root_overview or '(not available)'}\n\n"
-                f"Previous observations:\n{_trace_snapshot(steps)}\n\n"
-                f"Current candidates:\n{_candidate_snapshot(candidates)}\n\n"
-                "Remember: execution is limited to fd, rg, ls, tree, stat, mdls via the application."
+                f"q={query}\n"
+                f"root={overview_section}\n"
+                f"trace={trace_section}\n"
+                f"top={candidate_section}\n"
+                "tools=fd,rg,ls,tree,stat,mdls"
             ),
         },
     ]
@@ -279,13 +317,23 @@ def next_agent_action(
         payload = _extract_json_object(response)
         action = _parse_agent_action(payload)
         if action is None:
-            logger.warn("Agent action JSON parse failed; falling back to heuristic action")
-            return heuristic
+            logger.warn("Agent action JSON parse failed; finishing without heuristic fallback")
+            return AgentAction(
+                action="finish",
+                final_summary="LLM returned invalid agent JSON.",
+                reasoning="Invalid model action payload.",
+                source="backend",
+            )
         action.source = "ollama"
         return action
     except OllamaUnavailableError as exc:
         logger.warn(f"Ollama agent step unavailable: {exc}")
-        return heuristic
+        return AgentAction(
+            action="finish",
+            final_summary=f"LLM agent step unavailable: {exc}",
+            reasoning="Model timeout or local API failure.",
+            source="backend",
+        )
 
 
 def heuristic_next_action(query: str, steps: list[AgentStep]) -> AgentAction:
@@ -404,11 +452,11 @@ def _parse_agent_action(payload: dict | None) -> AgentAction | None:
     )
 
 
-def _trace_snapshot(steps: list[AgentStep]) -> str:
+def _trace_snapshot(steps: list[AgentStep], *, limit: int = 5) -> str:
     if not steps:
         return "(none yet)"
     lines: list[str] = []
-    for step in steps[-5:]:
+    for step in steps[-limit:]:
         lines.append(
             f"step {step.index}: action={step.action.action} terms={step.action.terms or ['-']} "
             f"source={step.action.source}"
@@ -437,6 +485,15 @@ def _candidate_snapshot(candidates: list[SearchCandidate], *, limit: int = 5) ->
             )
         )
     return "\n".join(rows)
+
+
+def _root_overview_snapshot(root_overview: str, *, limit: int = 400) -> str:
+    if not root_overview:
+        return "-"
+    compact = " ".join(root_overview.split())
+    if len(compact) <= limit:
+        return compact
+    return compact[:limit].rstrip() + "..."
 
 
 def _dedupe_terms(items: list[str]) -> list[str]:
