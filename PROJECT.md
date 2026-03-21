@@ -4,7 +4,7 @@
 
 QueryFind is a local CLI tool that helps users find files with natural language on macOS.
 
-Instead of manually navigating a file system or crafting complex shell commands, the user describes what they want. QueryFind uses a local LLM agent to translate that request into a constrained search plan, execute a small set of read-only file-system commands, and return ranked results with evidence.
+Instead of manually navigating a file system or crafting complex shell commands, the user describes what they want. QueryFind uses a local LLM agent to decide a bounded next search action, execute a small set of read-only file-system commands, observe the results, revise its next step, and return ranked results with evidence.
 
 The current focus is still a reliable macOS-first product path, but the project now also includes a real benchmark path for comparing model quality and speed.
 
@@ -36,7 +36,7 @@ The current focus is still a reliable macOS-first product path, but the project 
 
 The LLM must not emit arbitrary shell commands.
 
-Instead, QueryFind will expose only a constrained internal tool surface and compile the model's search intent into an allowlisted set of read-only commands:
+Instead, QueryFind will expose only a constrained internal tool surface and compile the model's search actions into an allowlisted set of read-only commands:
 
 - `fd`
 - `rg`
@@ -86,10 +86,11 @@ Expected runtime flow:
 
 1. Show root inspection progress.
 2. Auto-start Ollama when needed and available locally.
-3. Stream planner thinking.
+3. Stream agent-step thinking.
 4. Execute visible read-only search commands.
-5. Stream ranking thinking.
-6. Print a ranked result set with evidence.
+5. Feed command observations and warnings back into the next agent step.
+6. Rank and summarize the final candidate set.
+7. Print a ranked result set with evidence.
 
 ## Notes
 

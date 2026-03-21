@@ -5,15 +5,15 @@
 - `queryfind/`
   - `__main__.py`: `python -m queryfind` entrypoint.
   - `cli.py`: argument parsing and command dispatch.
-  - `app.py`: top-level search and doctor workflows.
+  - `app.py`: top-level search and doctor workflows plus the bounded agent loop orchestration.
   - `config.py`: runtime defaults and configuration dataclass.
-  - `models.py`: shared dataclasses for intents, candidates, and outcomes.
+  - `models.py`: shared dataclasses for intents, agent actions and observations, candidates, and outcomes.
   - `logging_utils.py`: timestamped stdout and file logging with streamed sections.
   - `ollama_client.py`: local Ollama HTTP streaming client.
-  - `planner.py`: heuristic planning plus optional LLM planning and ranking.
-  - `search_backend.py`: allowlisted command runner and file-system search pipeline.
+  - `planner.py`: heuristic fallback, iterative LLM action selection, and final candidate ranking.
+  - `search_backend.py`: allowlisted command runner and file-system search pipeline, including per-action observations and warnings.
   - `render.py`: terminal result rendering with Rich when available.
-  - `benchmark.py`: full benchmark runner with correctness and timing summaries.
+  - `benchmark.py`: full benchmark runner with correctness, timing, and agent-turn usage summaries.
   - `synthetic_eval.py`: small first-filter evaluation runner for the synthetic corpus.
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
 - `benchmark_fs/`: fuller benchmark corpus plus manifest for model comparison.
@@ -30,11 +30,12 @@
 2. Validate required search tools.
 3. Auto-start `ollama serve` when the configured local endpoint is down and auto-start is enabled.
 4. Inspect the root directory with `tree` or `ls`.
-5. Ask the local model for a structured search intent when available.
-6. Compile that intent into allowlisted `fd`, `rg`, `stat`, and `mdls` calls.
-7. Merge and score candidate files from path and content evidence.
-8. Ask the local model to rank and summarize candidates when available.
-9. Render ranked results and keep a timestamped log file.
+5. Ask the local model for the next bounded search action when available.
+6. Compile that action into allowlisted `fd`, `rg`, `stat`, and `mdls` calls.
+7. Convert command results and warnings into an observation summary and feed it back into the next step.
+8. Repeat until the agent finishes or the step budget is exhausted.
+9. Ask the local model to rank and summarize candidates when available.
+10. Render ranked results and keep a timestamped log file.
 
 ## Synthetic Validation
 
@@ -46,7 +47,7 @@
 
 - `benchmark_fs/full/` provides a larger static corpus with stronger ambiguity and more varied domains.
 - `benchmark_fs/full_manifest.json` defines benchmark cases and normalized file mtimes.
-- `queryfind.benchmark` runs the real planner/search/ranker pipeline, measures correctness and latency, supports case/category/difficulty filtering, and writes a JSON report.
+- `queryfind.benchmark` runs the real agent/search/ranker pipeline, measures correctness and latency, records step counts and actual LLM turn usage, supports case/category/difficulty filtering, and writes a JSON report.
 
 ## Safety Model
 

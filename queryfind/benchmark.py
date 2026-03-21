@@ -8,10 +8,9 @@ from pathlib import Path
 from statistics import mean, median
 import time
 
-from queryfind.app import resolve_search_client
+from queryfind.app import execute_search, resolve_search_client
 from queryfind.config import AppConfig
 from queryfind.logging_utils import RunLogger
-from queryfind.planner import plan_search, rank_results
 from queryfind.search_backend import SearchBackend
 
 
@@ -55,6 +54,8 @@ class CaseRunResult:
     top_paths: list[str]
     planning_source: str
     ranking_source: str
+    agent_step_count: int
+    llm_agent_turn_count: int
     candidate_count: int
     command_count: int
     total_ms: float
@@ -87,8 +88,11 @@ class TargetSummary:
     median_planning_ms: float
     median_search_ms: float
     median_ranking_ms: float
+    median_agent_step_count: float
+    median_llm_agent_turn_count: float
     median_candidate_count: float
     median_command_count: float
+    llm_agent_case_rate: float
     llm_planner_rate: float
     llm_ranker_rate: float
 
@@ -219,8 +223,10 @@ def _run_target(
         query="",
         root=manifest.corpus_root,
         model=model or "heuristic",
+        ollama_request_timeout=12.0,
         no_llm=not use_llm,
         show_thinking=False,
+        max_agent_steps=4,
         max_candidates=18,
         max_results=5,
         log_dir=logger.log_path.parent,
@@ -242,31 +248,23 @@ def _run_target(
             logger.info(f"target={target_name} case={case.name} start")
             case_start = time.perf_counter()
 
-            planning_start = time.perf_counter()
-            intent = plan_search(
-                case.query,
-                root_overview=root_overview,
-                config=config,
-                logger=logger,
-                client=client,
-            )
-            planning_ms = (time.perf_counter() - planning_start) * 1000.0
-
             search_start = time.perf_counter()
             commands_before = logger.command_count
-            candidates = backend.search(intent)
+            execution = execute_search(
+                config,
+                logger,
+                backend=backend,
+                client=client,
+                root_overview=root_overview,
+            )
             command_count = logger.command_count - commands_before
             search_ms = (time.perf_counter() - search_start) * 1000.0
-
-            ranking_start = time.perf_counter()
-            outcome = rank_results(
-                case.query,
-                candidates=candidates,
-                config=config,
-                logger=logger,
-                client=client,
-            )
-            ranking_ms = (time.perf_counter() - ranking_start) * 1000.0
+            candidates = execution.candidates
+            outcome = execution.outcome
+            llm_agent_turn_count = sum(1 for step in execution.agent_steps if step.action.source == "ollama")
+            planning_ms = 0.0
+            search_ms = execution.agent_ms
+            ranking_ms = execution.ranking_ms
             total_ms = (time.perf_counter() - case_start) * 1000.0
 
             matched_rank = None
@@ -307,8 +305,10 @@ def _run_target(
                     top_paths=[
                         str(candidate.path.relative_to(manifest.corpus_root)) for candidate in outcome.results[: case.top_k]
                     ],
-                    planning_source=intent.planning_source,
+                    planning_source="ollama" if llm_agent_turn_count else "heuristic",
                     ranking_source=outcome.ranking_source,
+                    agent_step_count=len(execution.agent_steps),
+                    llm_agent_turn_count=llm_agent_turn_count,
                     candidate_count=len(candidates),
                     command_count=command_count,
                     total_ms=round(total_ms, 3),
@@ -342,8 +342,11 @@ def _summarize_target(target_name: str, results: list[CaseRunResult]) -> TargetS
     planning_values = [item.planning_ms for item in results]
     search_values = [item.search_ms for item in results]
     ranking_values = [item.ranking_ms for item in results]
+    agent_step_values = [item.agent_step_count for item in results]
+    llm_agent_turn_values = [item.llm_agent_turn_count for item in results]
     candidate_values = [item.candidate_count for item in results]
     command_values = [item.command_count for item in results]
+    llm_agent_case_rate = sum(1 for item in results if item.llm_agent_turn_count > 0) / case_count
     llm_planner_rate = sum(1 for item in results if item.planning_source == "ollama") / case_count
     llm_ranker_rate = sum(1 for item in results if item.ranking_source == "ollama") / case_count
     return TargetSummary(
@@ -369,8 +372,11 @@ def _summarize_target(target_name: str, results: list[CaseRunResult]) -> TargetS
         median_planning_ms=round(median(planning_values), 3),
         median_search_ms=round(median(search_values), 3),
         median_ranking_ms=round(median(ranking_values), 3),
+        median_agent_step_count=round(median(agent_step_values), 3),
+        median_llm_agent_turn_count=round(median(llm_agent_turn_values), 3),
         median_candidate_count=round(median(candidate_values), 3),
         median_command_count=round(median(command_values), 3),
+        llm_agent_case_rate=round(llm_agent_case_rate, 4),
         llm_planner_rate=round(llm_planner_rate, 4),
         llm_ranker_rate=round(llm_ranker_rate, 4),
     )
@@ -452,18 +458,20 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "  median ms: "
             f"total={summary.median_total_ms:.1f} "
-            f"plan={summary.median_planning_ms:.1f} "
-            f"search={summary.median_search_ms:.1f} "
+            f"agent={summary.median_search_ms:.1f} "
             f"rank={summary.median_ranking_ms:.1f}"
         )
         print(f"  p95 total ms: {summary.p95_total_ms:.1f}")
         print(
             "  medians: "
+            f"agent_steps={summary.median_agent_step_count:.1f} "
+            f"llm_turns={summary.median_llm_agent_turn_count:.1f} "
             f"candidates={summary.median_candidate_count:.1f} "
             f"commands={summary.median_command_count:.1f}"
         )
         print(
             "  llm usage: "
+            f"agent_cases={summary.llm_agent_case_rate:.1%} "
             f"planner={summary.llm_planner_rate:.1%} "
             f"ranker={summary.llm_ranker_rate:.1%}"
         )

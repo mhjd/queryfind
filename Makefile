@@ -22,10 +22,10 @@ search: ## Run an example heuristic search against the current directory
 synthetic-eval: ## Run the basic synthetic filesystem evaluation
 	$(RUN) -m queryfind.synthetic_eval
 
-benchmark: ## Run the full benchmark in heuristic baseline mode
+benchmark: ## Run the full benchmark in heuristic baseline mode through the agent loop
 	$(RUN) -m queryfind.benchmark --heuristic-baseline
 
-benchmark-model: ## Run the full benchmark against the default model
+benchmark-model: ## Run the full benchmark against the default model through the agent loop
 	$(RUN) -m queryfind.benchmark --model qwen3.5:27b
 
 test: ## Run the unit and CLI smoke tests

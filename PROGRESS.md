@@ -23,3 +23,8 @@
 - Added timestamped logging, root inspection, allowlisted command execution, heuristic planning, candidate scoring, and ranked result rendering.
 - Added smoke tests for the heuristic planner, command allowlist enforcement, and the CLI search path.
 - Validated the baseline locally with `python3 -m unittest discover -s tests -v`, `python3 -m queryfind --doctor`, and one end-to-end auto-start run outside the sandbox.
+- Replaced the one-shot planner flow with a bounded agent loop: the model now chooses one safe search action at a time, observes command results and warnings, and can revise its next step before final ranking.
+- Added structured agent action, observation, and execution models so the runtime and benchmark can track real step counts and LLM turn usage.
+- Changed backend command failures from silent log-only warnings into agent-visible observations that can be fed back into subsequent model turns.
+- Updated the benchmark runner to execute the new agent loop and report median agent steps, median LLM turns, and the percentage of cases where the model actually contributed turns.
+- Validated the new loop locally with `python3 -m unittest discover -s tests -v` and `python3 -m queryfind.benchmark --heuristic-baseline --case latest_redwood_contract --quiet`.

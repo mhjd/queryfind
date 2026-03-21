@@ -21,8 +21,9 @@ class OllamaChunk:
 
 
 class OllamaClient:
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, *, request_timeout: float = 30.0) -> None:
         self.base_url = base_url.rstrip("/")
+        self.request_timeout = request_timeout
 
     def available(self) -> bool:
         try:
@@ -95,7 +96,7 @@ class OllamaClient:
             method="POST",
         )
         try:
-            with request.urlopen(req, timeout=60) as response:
+            with request.urlopen(req, timeout=self.request_timeout) as response:
                 for raw_line in response:
                     line = raw_line.decode("utf-8").strip()
                     if not line:
@@ -112,8 +113,28 @@ class OllamaClient:
         except (error.URLError, ConnectionError, TimeoutError) as exc:
             raise OllamaUnavailableError(str(exc)) from exc
 
-    def _request_json(self, method: str, path: str) -> dict:
-        raw = self._request(method, path, None)
+    def chat_json(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+        think: str | bool,
+    ) -> str:
+        body = {
+            "model": model,
+            "messages": messages,
+            "think": think,
+            "stream": False,
+            "format": "json",
+        }
+        payload = self._request_json("POST", "/api/chat", body)
+        if "error" in payload:
+            raise OllamaUnavailableError(str(payload["error"]))
+        message = payload.get("message", {})
+        return str(message.get("content", "")).strip()
+
+    def _request_json(self, method: str, path: str, body: dict | None = None) -> dict:
+        raw = self._request(method, path, body)
         return json.loads(raw or "{}")
 
     def _request(self, method: str, path: str, body: dict | None) -> str:
@@ -125,7 +146,7 @@ class OllamaClient:
             method=method,
         )
         try:
-            with request.urlopen(req, timeout=60) as response:
+            with request.urlopen(req, timeout=self.request_timeout) as response:
                 return response.read().decode("utf-8")
         except (error.URLError, ConnectionError, TimeoutError) as exc:
             raise OllamaUnavailableError(str(exc)) from exc
@@ -134,4 +155,4 @@ class OllamaClient:
 def resolve_think_value(model: str, think_level: str) -> str | bool:
     if model.startswith("gpt-oss"):
         return think_level
-    return True
+    return False

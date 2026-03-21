@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+from queryfind.app import execute_search
+from queryfind.config import AppConfig
 from queryfind.ollama_client import OllamaClient
 from queryfind.benchmark import load_manifest, run_benchmark
 from queryfind.planner import heuristic_intent
@@ -30,6 +32,19 @@ class QueryFindTests(unittest.TestCase):
                 backend = SearchBackend(root=Path(tmpdir), logger=logger, max_candidates=5)
                 with self.assertRaises(ValueError):
                     backend._run(["cat", "foo"], allowed_returncodes={0})  # noqa: SLF001
+            finally:
+                logger.close()
+
+    def test_backend_search_handles_command_failures_gracefully(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                intent = heuristic_intent("find any contract file")
+                with mock.patch.object(backend, "_run", side_effect=ValueError("Command not allowed: bogus")):
+                    candidates = backend.search(intent)
+                self.assertEqual(candidates, [])
             finally:
                 logger.close()
 
@@ -65,6 +80,29 @@ class QueryFindTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
             self.assertIn("client-beta-signed-contract.txt", result.stdout)
 
+    def test_execute_search_uses_multiple_heuristic_agent_steps(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "contracts").mkdir()
+            (root / "contracts" / "client-beta-signed-contract.txt").write_text(
+                "Signed contract for client beta.\n",
+                encoding="utf-8",
+            )
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                config = AppConfig(
+                    query="find the latest signed contract for client beta",
+                    root=root,
+                    no_llm=True,
+                    max_agent_steps=4,
+                )
+                execution = execute_search(config, logger)
+            finally:
+                logger.close()
+            self.assertGreaterEqual(len(execution.agent_steps), 2)
+            self.assertTrue(execution.outcome.results)
+            self.assertEqual(execution.agent_steps[0].action.action, "search_paths")
+
     def test_ollama_client_can_attempt_autostart(self) -> None:
         client = OllamaClient("http://127.0.0.1:11434")
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -78,6 +116,12 @@ class QueryFindTests(unittest.TestCase):
                 started = client.ensure_running(timeout=1.0, server_log_path=log_path)
             self.assertTrue(started)
             popen_mock.assert_called_once()
+
+    def test_non_gpt_oss_models_do_not_enable_thinking(self) -> None:
+        from queryfind.ollama_client import resolve_think_value
+
+        self.assertFalse(resolve_think_value("qwen3.5:27b", "medium"))
+        self.assertEqual(resolve_think_value("gpt-oss:20b", "medium"), "medium")
 
     def test_synthetic_eval_passes_without_llm(self) -> None:
         results = run_eval(use_llm=False)

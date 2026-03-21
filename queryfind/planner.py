@@ -6,7 +6,7 @@ import re
 
 from queryfind.config import AppConfig
 from queryfind.logging_utils import RunLogger
-from queryfind.models import SearchCandidate, SearchIntent, SearchOutcome
+from queryfind.models import AgentAction, AgentStep, SearchCandidate, SearchIntent, SearchOutcome
 from queryfind.ollama_client import OllamaClient, OllamaUnavailableError, resolve_think_value
 
 STOPWORDS = {
@@ -43,6 +43,8 @@ EXTENSIONS = {
     "txt",
     "xlsx",
 }
+
+AGENT_ACTIONS = {"search_paths", "search_contents", "finish"}
 
 
 def plan_search(
@@ -111,13 +113,15 @@ def rank_results(
     query: str,
     *,
     candidates: list[SearchCandidate],
+    agent_steps: list[AgentStep] | None = None,
+    final_summary_hint: str = "",
     config: AppConfig,
     logger: RunLogger,
     client: OllamaClient | None,
 ) -> SearchOutcome:
     if not candidates:
         return SearchOutcome(
-            summary="No matching files were found.",
+            summary=final_summary_hint or "No matching files were found.",
             results=[],
             ranking_source="heuristic",
         )
@@ -151,7 +155,12 @@ def rank_results(
         },
         {
             "role": "user",
-            "content": f"Query:\n{query}\n\nCandidates:\n{candidate_blob}",
+            "content": (
+                f"Query:\n{query}\n\n"
+                f"Agent observations:\n{_trace_snapshot(agent_steps or [])}\n\n"
+                f"Candidate shortlist:\n{candidate_blob}\n\n"
+                f"Current best hypothesis:\n{final_summary_hint or '(none)'}"
+            ),
         },
     ]
     try:
@@ -180,7 +189,7 @@ def rank_results(
         if not ranked:
             return heuristic_ranking(query, candidates, limit=config.max_results)
         return SearchOutcome(
-            summary=str(payload.get("summary") or "Ranked candidates from local evidence."),
+            summary=str(payload.get("summary") or final_summary_hint or "Ranked candidates from local evidence."),
             results=ranked[: config.max_results],
             ranking_source="ollama",
         )
@@ -220,6 +229,103 @@ def heuristic_ranking(query: str, candidates: list[SearchCandidate], *, limit: i
     return SearchOutcome(summary=summary, results=top[:limit], ranking_source="heuristic")
 
 
+def next_agent_action(
+    query: str,
+    *,
+    root_overview: str,
+    candidates: list[SearchCandidate],
+    steps: list[AgentStep],
+    config: AppConfig,
+    logger: RunLogger,
+    client: OllamaClient | None,
+) -> AgentAction:
+    heuristic = heuristic_next_action(query, steps)
+    if config.no_llm or client is None:
+        logger.info("Using heuristic agent action")
+        return heuristic
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are driving a local file search agent. "
+                "Do not produce shell commands. "
+                "Choose exactly one next action and output only one JSON object with keys "
+                "action, terms, extensions, reasoning, final_summary. "
+                "action must be one of search_paths, search_contents, finish. "
+                "Use short terms arrays. "
+                "Use finish when the current evidence is sufficient or the answer is likely absent."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"User query:\n{query}\n\n"
+                f"Root overview:\n{root_overview or '(not available)'}\n\n"
+                f"Previous observations:\n{_trace_snapshot(steps)}\n\n"
+                f"Current candidates:\n{_candidate_snapshot(candidates)}\n\n"
+                "Remember: execution is limited to fd, rg, ls, tree, stat, mdls via the application."
+            ),
+        },
+    ]
+    try:
+        response = _stream_completion(
+            client=client,
+            config=config,
+            logger=logger,
+            label="Streaming agent-step thinking",
+            messages=messages,
+        )
+        payload = _extract_json_object(response)
+        action = _parse_agent_action(payload)
+        if action is None:
+            logger.warn("Agent action JSON parse failed; falling back to heuristic action")
+            return heuristic
+        action.source = "ollama"
+        return action
+    except OllamaUnavailableError as exc:
+        logger.warn(f"Ollama agent step unavailable: {exc}")
+        return heuristic
+
+
+def heuristic_next_action(query: str, steps: list[AgentStep]) -> AgentAction:
+    intent = heuristic_intent(query)
+    used_path_terms = {
+        term for step in steps if step.action.action == "search_paths" for term in step.action.terms
+    }
+    used_content_terms = {
+        term for step in steps if step.action.action == "search_contents" for term in step.action.terms
+    }
+    remaining_path_terms = [
+        term for term in _dedupe_terms(intent.filename_hints + intent.path_terms) if term not in used_path_terms
+    ]
+    remaining_content_terms = [
+        term for term in _dedupe_terms(intent.content_terms or intent.path_terms) if term not in used_content_terms
+    ]
+    if remaining_path_terms:
+        return AgentAction(
+            action="search_paths",
+            terms=remaining_path_terms[:2],
+            extensions=intent.extensions[:4],
+            reasoning="Heuristic path-first exploration.",
+            source="heuristic",
+        )
+    if remaining_content_terms:
+        return AgentAction(
+            action="search_contents",
+            terms=remaining_content_terms[:2],
+            extensions=intent.extensions[:4],
+            reasoning="Heuristic content follow-up.",
+            source="heuristic",
+        )
+    return AgentAction(
+        action="finish",
+        final_summary="The heuristic search loop exhausted its planned steps.",
+        reasoning="No unused heuristic terms remain.",
+        source="heuristic",
+    )
+
+
 def _stream_completion(
     *,
     client: OllamaClient,
@@ -228,6 +334,14 @@ def _stream_completion(
     label: str,
     messages: list[dict[str, str]],
 ) -> str:
+    if not config.show_thinking:
+        logger.info(f"{label} (non-streaming JSON mode)")
+        return client.chat_json(
+            model=config.model,
+            messages=messages,
+            think=resolve_think_value(config.model, config.think_level),
+        )
+
     logger.start_stream(label)
     thinking_seen = False
     content_seen = False
@@ -273,3 +387,65 @@ def _list_of_strings(value: object) -> list[str]:
 
 def _valid_extensions(items: list[str]) -> list[str]:
     return [item.lstrip(".") for item in items if item.lstrip(".") in EXTENSIONS]
+
+
+def _parse_agent_action(payload: dict | None) -> AgentAction | None:
+    if payload is None:
+        return None
+    action = str(payload.get("action") or "").strip()
+    if action not in AGENT_ACTIONS:
+        return None
+    return AgentAction(
+        action=action,
+        terms=_list_of_strings(payload.get("terms"))[:3],
+        extensions=_valid_extensions(_list_of_strings(payload.get("extensions")))[:4],
+        reasoning=str(payload.get("reasoning") or "").strip(),
+        final_summary=str(payload.get("final_summary") or "").strip(),
+    )
+
+
+def _trace_snapshot(steps: list[AgentStep]) -> str:
+    if not steps:
+        return "(none yet)"
+    lines: list[str] = []
+    for step in steps[-5:]:
+        lines.append(
+            f"step {step.index}: action={step.action.action} terms={step.action.terms or ['-']} "
+            f"source={step.action.source}"
+        )
+        if step.observation is not None:
+            lines.append(f"observation: {step.observation.summary}")
+            if step.observation.warnings:
+                lines.append(f"warnings: {'; '.join(step.observation.warnings[:2])}")
+    return "\n".join(lines)
+
+
+def _candidate_snapshot(candidates: list[SearchCandidate], *, limit: int = 5) -> str:
+    if not candidates:
+        return "(none yet)"
+    rows = []
+    for candidate in candidates[:limit]:
+        rows.append(
+            json.dumps(
+                {
+                    "path": str(candidate.path),
+                    "score": round(candidate.score, 2),
+                    "reasons": candidate.reasons[:2],
+                    "snippets": candidate.snippets[:1],
+                    "kind": candidate.kind,
+                }
+            )
+        )
+    return "\n".join(rows)
+
+
+def _dedupe_terms(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    output: list[str] = []
+    for item in items:
+        cleaned = item.strip().lower()
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        output.append(cleaned)
+    return output

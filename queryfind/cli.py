@@ -26,6 +26,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("low", "medium", "high"),
         help="Thinking level for GPT-OSS models.",
     )
+    parser.add_argument(
+        "--max-agent-steps",
+        type=int,
+        default=4,
+        help="Maximum tool-observation iterations before final ranking.",
+    )
     parser.add_argument("--max-candidates", type=int, default=20, help="Maximum candidates to keep before ranking.")
     parser.add_argument("--max-results", type=int, default=5, help="Maximum ranked results to display.")
     parser.add_argument("--no-llm", action="store_true", help="Disable Ollama and use heuristics only.")
@@ -67,6 +73,7 @@ def main(argv: list[str] | None = None) -> int:
         model=args.model,
         ollama_url=args.ollama_url,
         think_level=args.think_level,
+        max_agent_steps=max(1, args.max_agent_steps),
         max_candidates=max_candidates,
         max_results=max_results,
         no_llm=bool(args.no_llm),

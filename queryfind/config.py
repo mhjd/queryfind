@@ -16,6 +16,8 @@ class AppConfig:
     model: str = DEFAULT_MODEL
     ollama_url: str = DEFAULT_OLLAMA_URL
     think_level: str = "medium"
+    ollama_request_timeout: float = 30.0
+    max_agent_steps: int = 4
     max_candidates: int = 20
     max_results: int = 5
     no_llm: bool = False

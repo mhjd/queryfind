@@ -2,7 +2,7 @@
 
 ## Status
 
-Benchmark suite implemented and validated in heuristic mode.
+Bounded agent loop implemented and validated in heuristic mode.
 
 ## Active Task
 
@@ -11,6 +11,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 - `python -m queryfind`
 - read-only allowlisted search commands
 - path and content search
+- iterative `LLM -> tool -> observe -> revise` search flow
 - streaming-friendly local Ollama integration
 - richer ranked results
 - synthetic filesystem smoke evaluation
@@ -25,7 +26,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 
 ## Next Steps
 
-1. Run the full benchmark against installed local models and compare success and timing.
-2. Review the benchmark design with read-only Codex feedback and harden weak cases that are too noisy or too lexical.
-3. Improve ranking quality on the synthetic corpus and benchmark corpus with prompt and scoring refinements.
+1. Tune the Qwen prompts and payload sizes so the model can complete agent turns within the current timeout budget.
+2. Run the full benchmark against installed local models and compare actual LLM turn usage, success, and timing.
+3. Review the benchmark design with read-only Codex feedback and harden weak cases that are too noisy or too lexical.
 4. Add stronger file-type handling for formats like PDF and Office documents.

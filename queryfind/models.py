@@ -29,7 +29,44 @@ class SearchCandidate:
 
 
 @dataclass(slots=True)
+class AgentAction:
+    action: str
+    terms: list[str] = field(default_factory=list)
+    extensions: list[str] = field(default_factory=list)
+    reasoning: str = ""
+    final_summary: str = ""
+    source: str = "heuristic"
+
+
+@dataclass(slots=True)
+class AgentObservation:
+    action: str
+    summary: str
+    executed_terms: list[str] = field(default_factory=list)
+    total_candidates: int = 0
+    new_candidates: list[str] = field(default_factory=list)
+    top_paths: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class AgentStep:
+    index: int
+    action: AgentAction
+    observation: AgentObservation | None = None
+
+
+@dataclass(slots=True)
 class SearchOutcome:
     summary: str
     results: list[SearchCandidate]
     ranking_source: str
+
+
+@dataclass(slots=True)
+class SearchExecution:
+    outcome: SearchOutcome
+    candidates: list[SearchCandidate]
+    agent_steps: list[AgentStep]
+    agent_ms: float = 0.0
+    ranking_ms: float = 0.0

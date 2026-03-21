@@ -10,7 +10,7 @@ import subprocess
 
 from queryfind.config import ALLOWED_COMMANDS, REQUIRED_COMMANDS
 from queryfind.logging_utils import RunLogger
-from queryfind.models import SearchCandidate, SearchIntent
+from queryfind.models import AgentAction, AgentObservation, SearchCandidate, SearchIntent
 
 
 @dataclass(slots=True)
@@ -24,6 +24,7 @@ class SearchBackend:
         self.root = root
         self.logger = logger
         self.max_candidates = max_candidates
+        self._recent_warnings: list[str] = []
 
     def dependency_report(self) -> DependencyReport:
         required_missing = [name for name in REQUIRED_COMMANDS if shutil.which(name) is None]
@@ -34,23 +35,107 @@ class SearchBackend:
 
     def inspect_root(self) -> str:
         if shutil.which("tree"):
-            result = self._run(
+            result = self._try_run(
                 ["tree", "-a", "-L", "2", "--noreport", "-I", ".git", str(self.root)],
                 allowed_returncodes={0},
+                context="root inspection via tree",
             )
-            text = result.stdout.strip()
-            if text:
-                return _truncate(text, 1500)
-        result = self._run(["ls", "-la", str(self.root)], allowed_returncodes={0})
+            if result is not None:
+                text = result.stdout.strip()
+                if text:
+                    return _truncate(text, 1500)
+        result = self._try_run(
+            ["ls", "-la", str(self.root)],
+            allowed_returncodes={0},
+            context="root inspection via ls",
+        )
+        if result is None:
+            self.logger.warn("Root inspection failed; continuing without a root overview")
+            return ""
         return _truncate(result.stdout.strip(), 1500)
 
     def search(self, intent: SearchIntent) -> list[SearchCandidate]:
         by_path: dict[Path, SearchCandidate] = {}
         self._search_paths(intent, by_path)
         self._search_contents(intent, by_path)
+        if not by_path and intent.extensions:
+            fallback_intent = SearchIntent(
+                query_summary=intent.query_summary,
+                path_terms=intent.path_terms[:],
+                content_terms=intent.content_terms[:],
+                filename_hints=intent.filename_hints[:],
+                extensions=[],
+                sort_hint=intent.sort_hint,
+                notes=intent.notes[:] + ["Retried without model-suggested extensions."],
+                planning_source=intent.planning_source,
+            )
+            self.logger.warn("No candidates found with extension filter; retrying without extensions")
+            self._search_paths(fallback_intent, by_path)
+            self._search_contents(fallback_intent, by_path)
         candidates = list(by_path.values())
         self._enrich_metadata(candidates[: self.max_candidates])
         self._sort_candidates(candidates, intent.sort_hint)
+        return candidates[: self.max_candidates]
+
+    def execute_action(self, action: AgentAction, by_path: dict[Path, SearchCandidate]) -> AgentObservation:
+        self._recent_warnings = []
+        before_paths = set(by_path)
+        if action.action == "search_paths":
+            self._search_paths(
+                SearchIntent(
+                    query_summary=action.reasoning or "Agent path search",
+                    path_terms=action.terms[:],
+                    filename_hints=action.terms[:],
+                    extensions=action.extensions[:],
+                    planning_source=action.source,
+                ),
+                by_path,
+            )
+        elif action.action == "search_contents":
+            self._search_contents(
+                SearchIntent(
+                    query_summary=action.reasoning or "Agent content search",
+                    content_terms=action.terms[:],
+                    path_terms=action.terms[:],
+                    extensions=action.extensions[:],
+                    planning_source=action.source,
+                ),
+                by_path,
+            )
+        candidates = self.finalize_candidates(by_path, sort_hint="relevance")
+        new_paths = [
+            self._display_path(candidate.path)
+            for candidate in candidates
+            if candidate.path not in before_paths
+        ]
+        if action.action == "finish":
+            summary = action.final_summary or "Agent finished without another tool action."
+        elif new_paths:
+            summary = (
+                f"{action.action} added {len(new_paths)} candidate(s); "
+                f"top now: {', '.join(self._display_path(item.path) for item in candidates[:3])}"
+            )
+        elif candidates:
+            summary = (
+                f"{action.action} added no new candidates; "
+                f"current top: {', '.join(self._display_path(item.path) for item in candidates[:3])}"
+            )
+        else:
+            summary = f"{action.action} found no candidates."
+        return AgentObservation(
+            action=action.action,
+            summary=summary,
+            executed_terms=action.terms[:],
+            total_candidates=len(candidates),
+            new_candidates=new_paths[:5],
+            top_paths=[self._display_path(item.path) for item in candidates[:5]],
+            warnings=self._recent_warnings[:],
+        )
+
+    def finalize_candidates(self, by_path: dict[Path, SearchCandidate], *, sort_hint: str) -> list[SearchCandidate]:
+        candidates = list(by_path.values())
+        self._enrich_metadata(candidates[: self.max_candidates])
+        self._sort_candidates(candidates, sort_hint)
         return candidates[: self.max_candidates]
 
     def _search_paths(self, intent: SearchIntent, by_path: dict[Path, SearchCandidate]) -> None:
@@ -70,7 +155,9 @@ class SearchBackend:
             for extension in intent.extensions[:4]:
                 argv.extend(["-e", extension])
             argv.extend([term, str(self.root)])
-            result = self._run(argv, allowed_returncodes={0})
+            result = self._try_run(argv, allowed_returncodes={0}, context=f"path search for '{term}'")
+            if result is None:
+                continue
             for raw_path in [item for item in result.stdout.split("\0") if item]:
                 path = Path(raw_path).resolve()
                 if not path.is_file():
@@ -87,7 +174,9 @@ class SearchBackend:
             for extension in intent.extensions[:4]:
                 argv.extend(["-g", f"*.{extension}"])
             argv.extend([term, str(self.root)])
-            result = self._run(argv, allowed_returncodes={0, 1})
+            result = self._try_run(argv, allowed_returncodes={0, 1}, context=f"content search for '{term}'")
+            if result is None:
+                continue
             if not result.stdout.strip():
                 continue
             for line in result.stdout.splitlines():
@@ -115,22 +204,26 @@ class SearchBackend:
     def _enrich_metadata(self, candidates: list[SearchCandidate]) -> None:
         for candidate in candidates:
             if shutil.which("stat"):
-                result = self._run(
+                result = self._try_run(
                     ["stat", "-f", "%m|%z|%N", str(candidate.path)],
                     allowed_returncodes={0},
+                    context=f"metadata lookup via stat for {candidate.path.name}",
                 )
-                parts = result.stdout.strip().split("|", maxsplit=2)
-                if len(parts) >= 2:
-                    candidate.mtime_epoch = int(parts[0])
-                    candidate.size_bytes = int(parts[1])
+                if result is not None:
+                    parts = result.stdout.strip().split("|", maxsplit=2)
+                    if len(parts) >= 2:
+                        candidate.mtime_epoch = int(parts[0])
+                        candidate.size_bytes = int(parts[1])
             if shutil.which("mdls"):
-                result = self._run(
+                result = self._try_run(
                     ["mdls", "-raw", "-name", "kMDItemKind", str(candidate.path)],
                     allowed_returncodes={0, 1},
+                    context=f"metadata lookup via mdls for {candidate.path.name}",
                 )
-                kind = result.stdout.strip()
-                if result.returncode == 0 and kind and kind != "(null)" and "could not find" not in kind:
-                    candidate.kind = kind.strip('"')
+                if result is not None:
+                    kind = result.stdout.strip()
+                    if result.returncode == 0 and kind and kind != "(null)" and "could not find" not in kind:
+                        candidate.kind = kind.strip('"')
 
     def _sort_candidates(self, candidates: list[SearchCandidate], sort_hint: str) -> None:
         if sort_hint == "mtime_desc":
@@ -169,6 +262,27 @@ class SearchBackend:
             stderr = result.stderr.strip() or "unknown command error"
             raise RuntimeError(f"{executable} failed with code {result.returncode}: {stderr}")
         return result
+
+    def _try_run(
+        self,
+        argv: list[str],
+        *,
+        allowed_returncodes: set[int],
+        context: str,
+    ) -> subprocess.CompletedProcess[str] | None:
+        try:
+            return self._run(argv, allowed_returncodes=allowed_returncodes)
+        except (RuntimeError, ValueError) as exc:
+            message = f"{context} failed; continuing with fallback behavior: {exc}"
+            self._recent_warnings.append(message)
+            self.logger.warn(message)
+            return None
+
+    def _display_path(self, path: Path) -> str:
+        try:
+            return str(path.relative_to(self.root))
+        except ValueError:
+            return str(path)
 
 
 def format_candidate_metadata(candidate: SearchCandidate) -> str:
