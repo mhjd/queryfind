@@ -9,7 +9,7 @@
 - Added a deterministic heuristic fallback so the CLI still works when the local Ollama server is not running.
 - Added automatic `ollama serve` startup so the CLI no longer depends on manual server launch.
 - Added early fallback when Ollama is reachable but no local model is installed.
-- Switched the project default Ollama model from `gpt-oss:20b` to `qwen3:30b-a3b`.
+- Switched the project default Ollama model from `gpt-oss:20b` to `qwen3.5:27b`.
 - Added a small synthetic filesystem under `synthetic_fs/basic/` for early end-to-end validation.
 - Added `python -m queryfind.synthetic_eval` and a `make synthetic-eval` target to verify basic search and light reasoning cases.
 - Validated the synthetic corpus locally with `python3 -m queryfind.synthetic_eval`, passing 6 out of 6 heuristic cases.

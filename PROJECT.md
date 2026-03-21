@@ -29,7 +29,7 @@ The benchmark side of the project exists, but it is intentionally out of scope f
 - Terminal UX: Rich when installed, with a plain-text fallback
 - File search backend: `fd`, `rg`, `ls`, `tree`, `stat`, `mdls`
 - LLM backend: Ollama
-- Default model: `qwen3:30b-a3b` (configurable)
+- Default model: `qwen3.5:27b` (configurable)
 - Packaging target: `python -m queryfind`
 
 ## Read-Only Command Policy
