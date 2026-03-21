@@ -2,7 +2,7 @@
 
 ## Status
 
-Benchmark runner implemented and being tightened for fair comparison behavior.
+Benchmark suite implemented and validated in heuristic mode.
 
 ## Active Task
 
@@ -26,6 +26,6 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 ## Next Steps
 
 1. Run the full benchmark against installed local models and compare success and timing.
-2. Review the benchmark design with read-only Codex feedback and harden weak cases.
+2. Review the benchmark design with read-only Codex feedback and harden weak cases that are too noisy or too lexical.
 3. Improve ranking quality on the synthetic corpus and benchmark corpus with prompt and scoring refinements.
 4. Add stronger file-type handling for formats like PDF and Office documents.

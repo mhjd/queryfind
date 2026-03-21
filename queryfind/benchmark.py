@@ -328,7 +328,9 @@ def _summarize_target(target_name: str, results: list[CaseRunResult]) -> TargetS
     case_count = len(results)
     success_count = sum(1 for item in results if item.success)
     top1_count = sum(1 for item in results if item.matched_rank == 1 and item.success)
-    top3_count = sum(1 for item in results if item.matched_rank is not None and item.matched_rank <= 3 and item.success)
+    top3_count = sum(
+        1 for item in results if item.matched_rank is not None and item.matched_rank > 0 and item.matched_rank <= 3 and item.success
+    )
     snippet_case_count = sum(1 for item in results if item.expected_snippet is not None)
     snippet_success_count = sum(
         1 for item in results if item.expected_snippet is not None and item.success and item.snippet_matched

@@ -22,9 +22,12 @@
     "projects/frostline/sensor-rollout.md": "2025-03-06T11:00:00+00:00",
     "finance/vendors/meridian/profile.md": "2025-02-27T13:15:00+00:00",
     "finance/vendors/meridian/invoices/2025-02-invoice.txt": "2025-02-28T09:10:00+00:00",
+    "finance/vendors/northcoast/profile.md": "2025-02-26T11:40:00+00:00",
     "finance/archive/tax-packet-index.md": "2025-01-30T08:05:00+00:00",
+    "hr/hiring/analytics-engineer-scorecard.md": "2025-03-07T15:40:00+00:00",
     "hr/hiring/data-platform-analyst-scorecard.md": "2025-03-08T15:50:00+00:00",
     "people/team-directory.md": "2025-01-04T09:20:00+00:00",
+    "projects/atlas/notes/lantern-comparison.md": "2025-03-13T13:25:00+00:00",
     ".hidden/site-aliases.txt": "2025-03-12T07:00:00+00:00"
   },
   "cases": [
@@ -32,6 +35,7 @@
       "name": "latest_redwood_contract",
       "category": "contracts",
       "difficulty": "easy",
+      "capability_tags": ["path", "content", "mtime"],
       "query": "find the latest signed contract for client redwood",
       "expected_path": "clients/redwood/contracts/2025-03-11-redwood-master-services-agreement-signed.txt",
       "top_k": 1
@@ -40,6 +44,7 @@
       "name": "redwood_security_addendum",
       "category": "contracts",
       "difficulty": "easy",
+      "capability_tags": ["path", "content"],
       "query": "find the signed security addendum for redwood",
       "expected_path": "clients/redwood/contracts/2025-03-07-redwood-security-addendum-signed.txt",
       "top_k": 1
@@ -48,6 +53,7 @@
       "name": "cinder_harbor_wifi_password",
       "category": "operations",
       "difficulty": "easy",
+      "capability_tags": ["content", "snippet"],
       "query": "find the file with the Wi-Fi password for Cinder Harbor",
       "expected_path": "operations/sites/cinder-harbor/network-runbook.md",
       "expected_snippet": "oak-tide-4117"
@@ -56,6 +62,7 @@
       "name": "dock_scanner_reset",
       "category": "operations",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet", "disambiguation"],
       "query": "find the procedure for resetting the dock 3 scanner firmware at Cinder Harbor",
       "expected_path": "operations/sites/cinder-harbor/dock-3-scanner-maintenance.md",
       "expected_snippet": "Hold the side button for 12 seconds"
@@ -64,6 +71,7 @@
       "name": "shipment_7718_delay_reason",
       "category": "operations",
       "difficulty": "medium",
+      "capability_tags": ["content", "disambiguation"],
       "query": "find the document that explains why shipment 7718 was delayed",
       "expected_path": "operations/logistics/incidents/shipment-7718-root-cause.md",
       "expected_snippet": "customs inspection"
@@ -72,6 +80,7 @@
       "name": "atlas_owner",
       "category": "projects",
       "difficulty": "easy",
+      "capability_tags": ["content", "snippet"],
       "query": "find the file that names the owner of project atlas",
       "expected_path": "projects/atlas/project-brief.md",
       "expected_snippet": "Owner: Mara Chen"
@@ -80,6 +89,7 @@
       "name": "atlas_latest_weekly_update",
       "category": "projects",
       "difficulty": "easy",
+      "capability_tags": ["path", "mtime"],
       "query": "find the latest weekly update for atlas",
       "expected_path": "projects/atlas/status/2025-03-14-weekly-update.md",
       "top_k": 1
@@ -88,6 +98,7 @@
       "name": "atlas_cutover_blocker",
       "category": "projects",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet"],
       "query": "find the file describing the blocker for atlas cutover",
       "expected_path": "projects/atlas/status/2025-03-14-weekly-update.md",
       "expected_snippet": "dock label printer calibration"
@@ -96,6 +107,7 @@
       "name": "lantern_not_atlas",
       "category": "projects",
       "difficulty": "medium",
+      "capability_tags": ["content", "disambiguation"],
       "query": "find the document saying Lantern is the migration playbook and not Atlas",
       "expected_path": "projects/lantern/playbook.md",
       "expected_snippet": "Lantern is the migration playbook"
@@ -104,6 +116,7 @@
       "name": "frostline_codename",
       "category": "projects",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet"],
       "query": "find the file that says Frostline is the codename for the freezer sensor rollout",
       "expected_path": "projects/frostline/sensor-rollout.md",
       "expected_snippet": "Frostline is the codename"
@@ -112,6 +125,7 @@
       "name": "refrigerated_overflow_vendor",
       "category": "finance",
       "difficulty": "medium",
+      "capability_tags": ["content", "disambiguation"],
       "query": "find the vendor profile for the company that handles refrigerated overflow",
       "expected_path": "finance/vendors/meridian/profile.md",
       "expected_snippet": "refrigerated overflow"
@@ -120,6 +134,7 @@
       "name": "tax_packet_box_code",
       "category": "finance",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet"],
       "query": "find the file with the archive box code for the 2023 tax packets",
       "expected_path": "finance/archive/tax-packet-index.md",
       "expected_snippet": "AR-17"
@@ -128,6 +143,7 @@
       "name": "archive_room_code",
       "category": "operations",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet"],
       "query": "find the document that contains the archive room door code",
       "expected_path": "operations/warehouse/access/archive-room-access.md",
       "expected_snippet": "4825#"
@@ -136,6 +152,7 @@
       "name": "analyst_recommendation",
       "category": "hr",
       "difficulty": "medium",
+      "capability_tags": ["content", "snippet", "disambiguation"],
       "query": "find the scorecard recommending a candidate for the data platform analyst role",
       "expected_path": "hr/hiring/data-platform-analyst-scorecard.md",
       "expected_snippet": "Recommend hire: Imani Holt"
@@ -144,6 +161,7 @@
       "name": "harbor7_alias_note",
       "category": "aliases",
       "difficulty": "medium",
+      "capability_tags": ["hidden", "content"],
       "query": "find the hidden note mapping Harbor 7 to Cinder Harbor",
       "expected_path": ".hidden/site-aliases.txt",
       "expected_snippet": "Harbor 7 = Cinder Harbor"
@@ -152,6 +170,7 @@
       "name": "harbor7_wifi_password",
       "category": "aliases",
       "difficulty": "hard",
+      "capability_tags": ["hidden", "multi_file", "snippet"],
       "query": "find the file with the Wi-Fi password for Harbor 7",
       "expected_path": "operations/sites/cinder-harbor/network-runbook.md",
       "expected_snippet": "oak-tide-4117"
@@ -160,9 +179,30 @@
       "name": "jules_duran_role",
       "category": "people",
       "difficulty": "easy",
+      "capability_tags": ["content", "snippet"],
       "query": "find the directory file that lists Jules Duran's role",
       "expected_path": "people/team-directory.md",
       "expected_snippet": "Jules Duran: logistics coordinator"
+    },
+    {
+      "name": "no_sable_contract",
+      "category": "negative",
+      "difficulty": "medium",
+      "capability_tags": ["no_answer"],
+      "query": "find the signed contract for client sable",
+      "expected_path": null,
+      "acceptable_paths": [],
+      "top_k": 1
+    },
+    {
+      "name": "no_bonus_sheet",
+      "category": "negative",
+      "difficulty": "medium",
+      "capability_tags": ["no_answer"],
+      "query": "find the spreadsheet with March bonus payouts",
+      "expected_path": null,
+      "acceptable_paths": [],
+      "top_k": 1
     }
   ]
 }

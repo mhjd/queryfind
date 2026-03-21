@@ -15,6 +15,9 @@
 - Validated the synthetic corpus locally with `python3 -m queryfind.synthetic_eval`, passing 6 out of 6 heuristic cases.
 - Added a fuller benchmark corpus under `benchmark_fs/full/` plus a machine-readable manifest in `benchmark_fs/full_manifest.json`.
 - Added `python -m queryfind.benchmark` to measure both correctness and timing across benchmark cases and models.
+- Added capability tags, negative cases, and richer timing metadata such as command count and candidate count to the benchmark schema.
+- Validated the benchmark path locally with `python3 -m queryfind.benchmark --heuristic-baseline --case latest_redwood_contract --case cinder_harbor_wifi_password --case atlas_owner` and a full `--quiet` heuristic run.
+- The current heuristic baseline on the full benchmark is 10/19 success, 8/19 top-1, 6/14 snippet success, median 93.9 ms, p95 119.4 ms, and 1/2 negative-case success.
 - Fixed the benchmark runner so heuristic-only runs no longer try to execute an unavailable default model.
 - Changed the benchmark CLI to behave like a measurement tool rather than a pass/fail test command.
 - Added timestamped logging, root inspection, allowlisted command execution, heuristic planning, candidate scoring, and ranked result rendering.
