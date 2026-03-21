@@ -55,6 +55,16 @@ def resolve_search_client(config: AppConfig, logger: RunLogger, *, timestamp: st
     return client
 
 
+def prewarm_search_client(config: AppConfig, logger: RunLogger, *, client: OllamaClient | None) -> None:
+    if client is None or not config.ollama_prewarm:
+        return
+    logger.info(
+        f"prewarming model {config.model} with keep_alive={config.ollama_keep_alive or 'default'}"
+    )
+    client.prewarm(model=config.model, keep_alive=config.ollama_keep_alive)
+    logger.info("model prewarm completed")
+
+
 def run_search(config: AppConfig) -> int:
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     logger = RunLogger(config.resolved_log_dir / f"queryfind-{timestamp}.log")
@@ -74,6 +84,7 @@ def run_search(config: AppConfig) -> int:
             logger.error("LLM mode requested but the configured local model is unavailable")
             logger.info(f"log file: {logger.log_path}")
             return 2
+        prewarm_search_client(config, logger, client=client)
         execution = execute_search(config, logger, backend=backend, client=client)
         if not execution.outcome.results:
             logger.warn("no files matched the current query")

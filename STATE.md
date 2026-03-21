@@ -5,6 +5,7 @@
 Bounded agent loop implemented and validated in heuristic mode.
 Automatic heuristic fallback has been removed from LLM mode so benchmark and runtime behavior stay honest.
 Agent steps now stream even in hidden-thinking mode so timeout diagnosis can distinguish "no output at all" from "partial progress".
+Benchmark runs now prewarm the selected Ollama model and request a long keep-alive so cold-start and model eviction are less misleading.
 
 ## Active Task
 
@@ -28,7 +29,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 
 ## Next Steps
 
-1. Tune the Qwen prompts and payload sizes so the model can complete agent turns within the current timeout budget.
-2. Run the full benchmark against installed local models and compare actual LLM turn usage, success, and timing.
-3. Review the benchmark design with read-only Codex feedback and harden weak cases that are too noisy or too lexical.
-4. Add stronger file-type handling for formats like PDF and Office documents.
+1. Improve the action prompts so models do not over-constrain themselves with bad extension filters or miss obvious content-first cases.
+2. Review the benchmark design with read-only Codex feedback and harden weak cases that are too noisy or too lexical.
+3. Add stronger file-type handling for formats like PDF and Office documents.
+4. Consider separate cold-start and warm-run benchmark modes for clearer latency reporting.

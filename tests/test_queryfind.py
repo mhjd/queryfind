@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from queryfind.app import execute_search
+from queryfind.app import execute_search, prewarm_search_client
 from queryfind.config import AppConfig
 from queryfind.ollama_client import OllamaChunk, OllamaClient, OllamaUnavailableError
 from queryfind.benchmark import load_manifest, run_benchmark
@@ -104,6 +104,23 @@ class QueryFindTests(unittest.TestCase):
             self.assertTrue(execution.outcome.results)
             self.assertEqual(execution.agent_steps[0].action.action, "search_paths")
 
+    def test_prewarm_search_client_calls_client_when_enabled(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = RunLogger(Path(tmpdir) / "test.log", echo=False)
+            try:
+                client = mock.Mock()
+                config = AppConfig(
+                    query="find contract",
+                    root=Path(tmpdir),
+                    no_llm=False,
+                    ollama_prewarm=True,
+                    ollama_keep_alive="30m",
+                )
+                prewarm_search_client(config, logger, client=client)
+            finally:
+                logger.close()
+            client.prewarm.assert_called_once_with(model=config.model, keep_alive="30m")
+
     def test_execute_search_does_not_fallback_to_heuristic_when_llm_is_unavailable(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -150,8 +167,15 @@ class QueryFindTests(unittest.TestCase):
 
     def test_agent_step_uses_streaming_in_hidden_thinking_mode(self) -> None:
         class FakeStreamingClient:
-            def chat_stream(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
-                del model, messages, think
+            def chat_stream(
+                self,
+                *,
+                model: str,
+                messages: list[dict[str, str]],
+                think: str | bool,
+                keep_alive: str | int | None = None,
+            ):
+                del model, messages, think, keep_alive
                 yield OllamaChunk(content='{"action":"finish","terms":[],"extensions":[],"reasoning":"done","final_summary":"done"}')
 
             def chat_json(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
@@ -180,8 +204,15 @@ class QueryFindTests(unittest.TestCase):
 
     def test_agent_step_can_use_partial_streamed_json_before_timeout(self) -> None:
         class FakePartialStreamingClient:
-            def chat_stream(self, *, model: str, messages: list[dict[str, str]], think: str | bool):
-                del model, messages, think
+            def chat_stream(
+                self,
+                *,
+                model: str,
+                messages: list[dict[str, str]],
+                think: str | bool,
+                keep_alive: str | int | None = None,
+            ):
+                del model, messages, think, keep_alive
                 yield OllamaChunk(content='{"action":"finish","terms":[],"extensions":[],"reasoning":"done","final_summary":"done"}')
                 raise OllamaUnavailableError("timed out")
 

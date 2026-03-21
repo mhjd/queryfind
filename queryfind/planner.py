@@ -393,6 +393,7 @@ def _stream_completion(
             model=config.model,
             messages=messages,
             think=resolve_think_value(config.model, config.think_level),
+            keep_alive=config.ollama_keep_alive,
         )
 
     if config.show_thinking:
@@ -411,6 +412,7 @@ def _stream_completion(
             model=config.model,
             messages=messages,
             think=resolve_think_value(config.model, config.think_level),
+            keep_alive=config.ollama_keep_alive,
         ):
             if chunk.thinking or chunk.content:
                 chunk_count += 1

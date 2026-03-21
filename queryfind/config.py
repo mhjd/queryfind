@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-
 DEFAULT_MODEL = "qwen3.5:27b"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 ALLOWED_COMMANDS = ("fd", "rg", "ls", "tree", "stat", "mdls")
@@ -16,7 +15,9 @@ class AppConfig:
     model: str = DEFAULT_MODEL
     ollama_url: str = DEFAULT_OLLAMA_URL
     think_level: str = "medium"
-    ollama_request_timeout: float = 30.0
+    ollama_request_timeout: float = 60.0
+    ollama_keep_alive: str | int | None = None
+    ollama_prewarm: bool = False
     max_agent_steps: int = 4
     max_candidates: int = 20
     max_results: int = 5

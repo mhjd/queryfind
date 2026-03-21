@@ -81,6 +81,7 @@ class OllamaClient:
         model: str,
         messages: list[dict[str, str]],
         think: str | bool,
+        keep_alive: str | int | None = None,
     ):
         body = {
             "model": model,
@@ -88,6 +89,8 @@ class OllamaClient:
             "think": think,
             "stream": True,
         }
+        if keep_alive is not None:
+            body["keep_alive"] = keep_alive
         data = json.dumps(body).encode("utf-8")
         req = request.Request(
             f"{self.base_url}/api/chat",
@@ -119,6 +122,7 @@ class OllamaClient:
         model: str,
         messages: list[dict[str, str]],
         think: str | bool,
+        keep_alive: str | int | None = None,
     ) -> str:
         body = {
             "model": model,
@@ -127,11 +131,25 @@ class OllamaClient:
             "stream": False,
             "format": "json",
         }
+        if keep_alive is not None:
+            body["keep_alive"] = keep_alive
         payload = self._request_json("POST", "/api/chat", body)
         if "error" in payload:
             raise OllamaUnavailableError(str(payload["error"]))
         message = payload.get("message", {})
         return str(message.get("content", "")).strip()
+
+    def prewarm(self, *, model: str, keep_alive: str | int | None = None) -> None:
+        body: dict[str, object] = {
+            "model": model,
+            "prompt": "",
+            "stream": False,
+        }
+        if keep_alive is not None:
+            body["keep_alive"] = keep_alive
+        payload = self._request_json("POST", "/api/generate", body)
+        if "error" in payload:
+            raise OllamaUnavailableError(str(payload["error"]))
 
     def _request_json(self, method: str, path: str, body: dict | None = None) -> dict:
         raw = self._request(method, path, body)

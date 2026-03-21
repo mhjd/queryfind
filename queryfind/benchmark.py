@@ -8,7 +8,7 @@ from pathlib import Path
 from statistics import mean, median
 import time
 
-from queryfind.app import execute_search, resolve_search_client
+from queryfind.app import execute_search, prewarm_search_client, resolve_search_client
 from queryfind.config import AppConfig
 from queryfind.logging_utils import RunLogger
 from queryfind.search_backend import SearchBackend
@@ -223,7 +223,9 @@ def _run_target(
         query="",
         root=manifest.corpus_root,
         model=model or "heuristic",
-        ollama_request_timeout=12.0,
+        ollama_request_timeout=60.0,
+        ollama_keep_alive="30m" if use_llm else None,
+        ollama_prewarm=use_llm,
         no_llm=not use_llm,
         show_thinking=False,
         max_agent_steps=4,
@@ -239,6 +241,7 @@ def _run_target(
     client = resolve_search_client(config, logger, timestamp=f"{timestamp}-{target_name.replace(':', '_')}")
     if use_llm and client is None:
         raise RuntimeError(f"Requested model '{target_name}' is not available for benchmark execution.")
+    prewarm_search_client(config, logger, client=client)
 
     results: list[CaseRunResult] = []
     for repeat_index in range(1, repeats + 1):

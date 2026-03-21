@@ -33,3 +33,8 @@
 - Validated the stricter LLM path with `python3 -m queryfind.benchmark --model qwen3.5:27b --case latest_redwood_contract --quiet`, which now reports an honest 0/1 with one timed-out agent turn budget and no heuristic rescue.
 - Changed the agent-step path to stream silently even in hidden-thinking mode and log diagnostics such as first-chunk latency, chunk count, and character count.
 - Validated the streamed diagnostics path with `python3 -m queryfind.benchmark --model qwen3.5:27b --case latest_redwood_contract --quiet`; the current Qwen case shows `first_chunk_ms=-`, `chunks=0`, and `chars=0` before the 12 second timeout, which means no streamed output arrived at all.
+- Increased the Ollama request timeout to 60 seconds and added benchmark prewarm plus `keep_alive` support so large local models can be evaluated more fairly.
+- Verified the root cause of the early qwen3.5 failures: cold `qwen3.5:27b` produced zero chunks within 12 seconds, while warm direct probes produced first chunks in about 1.7 seconds for a tiny prompt and about 8.2 seconds for the real agent-step prompt.
+- Ran a partial `qwen3.5:27b` full benchmark before stopping it due latency. It solved the first two benchmark cases, but took about 282.6 seconds for `latest_redwood_contract` and 219.3 seconds for `redwood_security_addendum`, which is too slow for practical iteration.
+- Ran the full benchmark on `qwen3-coder:30b` after evicting `qwen3.5:27b` from the GPU so the coder model could prewarm cleanly.
+- `qwen3-coder:30b` benchmark result: 8/19 success, 6/19 top-1, 4/14 snippet success, 2/2 negative-case success, median total 15.8 seconds, p95 19.0 seconds, and 100% LLM agent-turn usage.
