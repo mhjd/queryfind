@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-DEFAULT_MODEL = "gpt-oss:20b"
+DEFAULT_MODEL = "qwen3:30b-a3b"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 ALLOWED_COMMANDS = ("fd", "rg", "ls", "tree", "stat", "mdls")
 REQUIRED_COMMANDS = ("fd", "rg")

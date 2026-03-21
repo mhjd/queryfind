@@ -9,6 +9,7 @@
 - Added a deterministic heuristic fallback so the CLI still works when the local Ollama server is not running.
 - Added automatic `ollama serve` startup so the CLI no longer depends on manual server launch.
 - Added early fallback when Ollama is reachable but no local model is installed.
+- Switched the project default Ollama model from `gpt-oss:20b` to `qwen3:30b-a3b`.
 - Added timestamped logging, root inspection, allowlisted command execution, heuristic planning, candidate scoring, and ranked result rendering.
 - Added smoke tests for the heuristic planner, command allowlist enforcement, and the CLI search path.
 - Validated the baseline locally with `python3 -m unittest discover -s tests -v`, `python3 -m queryfind --doctor`, and one end-to-end auto-start run outside the sandbox.

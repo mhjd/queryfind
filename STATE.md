@@ -19,6 +19,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 - Current priority is the user's macOS setup, not broad platform support.
 - Homebrew-installed `fd`, `rg`, `tree`, and `ollama` are acceptable.
 - Runtime must stay local-only.
+- The default Ollama model is `qwen3:30b-a3b`.
 
 ## Next Steps
 
