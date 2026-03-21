@@ -8,6 +8,7 @@ import unittest
 from unittest import mock
 
 from queryfind.ollama_client import OllamaClient
+from queryfind.benchmark import load_manifest, run_benchmark
 from queryfind.planner import heuristic_intent
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
@@ -82,6 +83,24 @@ class QueryFindTests(unittest.TestCase):
         results = run_eval(use_llm=False)
         failed = [result.case.name for result in results if not result.success]
         self.assertEqual(failed, [], msg=f"failed synthetic cases: {failed}")
+
+    def test_benchmark_manifest_loads(self) -> None:
+        manifest = load_manifest()
+        self.assertGreaterEqual(len(manifest.cases), 16)
+        self.assertTrue(manifest.corpus_root.exists())
+
+    def test_benchmark_runner_executes_subset_without_llm(self) -> None:
+        _, results, summaries, report_path = run_benchmark(
+            models=[],
+            include_heuristic=True,
+            case_names={"latest_redwood_contract", "cinder_harbor_wifi_password", "atlas_owner"},
+            repeats=1,
+            quiet=True,
+        )
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(summaries), 1)
+        self.assertTrue(report_path.exists())
+        self.assertTrue(any(item.success for item in results))
 
 
 if __name__ == "__main__":

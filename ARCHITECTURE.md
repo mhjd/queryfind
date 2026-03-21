@@ -13,8 +13,10 @@
   - `planner.py`: heuristic planning plus optional LLM planning and ranking.
   - `search_backend.py`: allowlisted command runner and file-system search pipeline.
   - `render.py`: terminal result rendering with Rich when available.
+  - `benchmark.py`: full benchmark runner with correctness and timing summaries.
   - `synthetic_eval.py`: small first-filter evaluation runner for the synthetic corpus.
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
+- `benchmark_fs/`: fuller benchmark corpus plus manifest for model comparison.
 - `synthetic_fs/`: small static synthetic filesystem for early search validation.
 - `pyproject.toml`: package metadata and pinned runtime dependency declaration.
 - `Makefile`: project commands.
@@ -39,6 +41,12 @@
 - `synthetic_fs/basic/` provides a small local directory tree with contracts, runbooks, project notes, onboarding files, and hidden notes.
 - `queryfind.synthetic_eval` resets corpus mtimes, runs representative search cases, and verifies the expected file appears in the top results.
 - The synthetic evaluation is a first filter for concrete environment checks before a later benchmark is added.
+
+## Benchmarking
+
+- `benchmark_fs/full/` provides a larger static corpus with stronger ambiguity and more varied domains.
+- `benchmark_fs/full_manifest.json` defines benchmark cases and normalized file mtimes.
+- `queryfind.benchmark` runs the real planner/search/ranker pipeline, measures correctness and latency, supports case/category/difficulty filtering, and writes a JSON report.
 
 ## Safety Model
 

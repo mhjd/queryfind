@@ -1,0 +1,4 @@
+Internal site aliases.
+
+Harbor 7 = Cinder Harbor
+Cold Room West = Frostline pilot zone

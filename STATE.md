@@ -2,7 +2,7 @@
 
 ## Status
 
-Baseline implemented and validated in heuristic mode.
+Benchmark runner implemented and being tightened for fair comparison behavior.
 
 ## Active Task
 
@@ -14,6 +14,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 - streaming-friendly local Ollama integration
 - richer ranked results
 - synthetic filesystem smoke evaluation
+- fuller benchmark corpus and runner
 
 ## Assumptions
 
@@ -24,7 +25,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 
 ## Next Steps
 
-1. Install and validate a real local model so streamed planning and ranking can run end to end after auto-start.
-2. Improve ranking quality on the synthetic corpus and real-world directories with prompt and scoring refinements.
-3. Add stronger file-type handling for formats like PDF and Office documents.
-4. Expand the synthetic corpus with harder multi-file reasoning cases after the first benchmark-free filter is stable.
+1. Run the full benchmark against installed local models and compare success and timing.
+2. Review the benchmark design with read-only Codex feedback and harden weak cases.
+3. Improve ranking quality on the synthetic corpus and benchmark corpus with prompt and scoring refinements.
+4. Add stronger file-type handling for formats like PDF and Office documents.

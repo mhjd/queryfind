@@ -6,7 +6,7 @@ QueryFind is a local CLI tool that helps users find files with natural language 
 
 Instead of manually navigating a file system or crafting complex shell commands, the user describes what they want. QueryFind uses a local LLM agent to translate that request into a constrained search plan, execute a small set of read-only file-system commands, and return ranked results with evidence.
 
-The benchmark side of the project exists, but it is intentionally out of scope for now. The current focus is a reliable macOS-first product path.
+The current focus is still a reliable macOS-first product path, but the project now also includes a real benchmark path for comparing model quality and speed.
 
 ## V1 Goals
 
@@ -75,6 +75,13 @@ Synthetic evaluation usage:
 python -m queryfind.synthetic_eval
 ```
 
+Benchmark usage:
+
+```bash
+python -m queryfind.benchmark --heuristic-baseline
+python -m queryfind.benchmark --model qwen3.5:27b
+```
+
 Expected runtime flow:
 
 1. Show root inspection progress.
@@ -88,5 +95,7 @@ Expected runtime flow:
 
 - Homebrew-installed dependencies are acceptable for now.
 - Initial support is for the current macOS environment first.
-- Broader macOS compatibility and benchmark work will be handled later.
+- Broader macOS compatibility will be handled later.
 - A small synthetic filesystem is included for early end-to-end validation before the later benchmark work exists.
+- A fuller benchmark corpus is included to compare model correctness and latency once local models are installed.
+- The synthetic eval remains the pass/fail gate; the benchmark is a measurement tool and should not be treated as a binary test.

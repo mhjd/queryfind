@@ -1,0 +1,7 @@
+Redwood Foods security addendum.
+
+Status: signed
+Client: Redwood Foods
+Signed on 2025-03-07.
+
+This addendum covers MFA enforcement, endpoint encryption, and incident notification timing.

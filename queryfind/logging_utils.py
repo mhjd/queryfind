@@ -14,6 +14,7 @@ class RunLogger:
     echo: bool = True
     _handle: TextIO = field(init=False, repr=False)
     _stream_open: bool = field(init=False, default=False, repr=False)
+    command_count: int = field(init=False, default=0)
 
     def __post_init__(self) -> None:
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -35,6 +36,7 @@ class RunLogger:
         self._log("ERROR", message)
 
     def command(self, argv: list[str]) -> None:
+        self.command_count += 1
         self._log("INFO", f"exec {shlex.join(argv)}")
 
     def start_stream(self, label: str) -> None:
