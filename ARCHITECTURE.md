@@ -20,6 +20,7 @@
 - `synthetic_fs/`: small static synthetic filesystem for early search validation.
 - `pyproject.toml`: package metadata and pinned runtime dependency declaration.
 - `Makefile`: project commands.
+- `README.md`: quick user-facing overview, install steps, and primary commands.
 - `PROJECT.md`: product scope and command policy.
 - `STATE.md`: current work state and next steps.
 - `PROGRESS.md`: append-only progress log.
