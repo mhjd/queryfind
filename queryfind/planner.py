@@ -295,7 +295,13 @@ def next_agent_action(
                 "Return JSON only: "
                 "{\"action\":\"search_paths|search_contents|finish\",\"terms\":[...],"
                 "\"extensions\":[...],\"reasoning\":\"...\",\"final_summary\":\"...\"}. "
-                "Prefer 1-2 short terms. Use finish when evidence is enough or likely absent."
+                "Prefer 1-2 short terms. "
+                "Use search_paths for concise file-name or path clues. "
+                "Use search_contents when the answer is more likely to appear inside document text than in a file name. "
+                "Break the request into entity names and key concept terms; do not copy the whole request as one long search phrase. "
+                "Avoid generic framing words and long relational phrases as terms. "
+                "If a step finds no candidates, switch between path search and content search or shorten the terms; do not repeat the same failed query. "
+                "Use finish when evidence is enough or likely absent."
             ),
         },
         {

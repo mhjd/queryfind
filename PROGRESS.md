@@ -38,5 +38,7 @@
 - Ran a partial `qwen3.5:27b` full benchmark before stopping it due latency. It solved the first two benchmark cases, but took about 282.6 seconds for `latest_redwood_contract` and 219.3 seconds for `redwood_security_addendum`, which is too slow for practical iteration.
 - Ran the full benchmark on `qwen3-coder:30b` after evicting `qwen3.5:27b` from the GPU so the coder model could prewarm cleanly.
 - `qwen3-coder:30b` benchmark result: 8/19 success, 6/19 top-1, 4/14 snippet success, 2/2 negative-case success, median total 15.8 seconds, p95 19.0 seconds, and 100% LLM agent-turn usage.
+- Reworked the agent system prompt toward more general path-vs-content guidance instead of benchmark-shaped examples.
+- Verified the accepted general prompt on `qwen3-coder:30b`; the latest full run reached 14/19 success, 12/19 top-1, 10/14 snippet success, and 2/2 negative-case success.
 - Added a top-level `README.md` with a short project overview, install steps, and primary usage examples.
 - Updated `AGENTS.md` so future work explicitly keeps `README.md` synchronized with installation, setup, and user-visible command changes.
