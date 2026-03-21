@@ -5,7 +5,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
+from queryfind.ollama_client import OllamaClient
 from queryfind.planner import heuristic_intent
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
@@ -60,6 +62,20 @@ class QueryFindTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
             self.assertIn("client-beta-signed-contract.txt", result.stdout)
+
+    def test_ollama_client_can_attempt_autostart(self) -> None:
+        client = OllamaClient("http://127.0.0.1:11434")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "ollama-serve.log"
+            with (
+                mock.patch("queryfind.ollama_client.shutil.which", return_value="/opt/homebrew/bin/ollama"),
+                mock.patch.object(client, "available", side_effect=[False, False, True]),
+                mock.patch("queryfind.ollama_client.time.sleep", return_value=None),
+                mock.patch("queryfind.ollama_client.subprocess.Popen") as popen_mock,
+            ):
+                started = client.ensure_running(timeout=1.0, server_log_path=log_path)
+            self.assertTrue(started)
+            popen_mock.assert_called_once()
 
 
 if __name__ == "__main__":

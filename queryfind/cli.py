@@ -30,6 +30,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-results", type=int, default=5, help="Maximum ranked results to display.")
     parser.add_argument("--no-llm", action="store_true", help="Disable Ollama and use heuristics only.")
     parser.add_argument(
+        "--no-ollama-autostart",
+        action="store_true",
+        help="Do not auto-start Ollama when it is not already running.",
+    )
+    parser.add_argument(
+        "--ollama-start-timeout",
+        type=float,
+        default=12.0,
+        help="Seconds to wait for an auto-started Ollama server to become reachable.",
+    )
+    parser.add_argument(
         "--hide-thinking",
         action="store_true",
         help="Hide streamed model reasoning while still using the local model.",
@@ -60,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
         max_results=max_results,
         no_llm=bool(args.no_llm),
         show_thinking=not bool(args.hide_thinking),
+        ollama_autostart=not bool(args.no_ollama_autostart),
+        ollama_start_timeout=max(1.0, args.ollama_start_timeout),
         log_dir=Path(args.log_dir) if args.log_dir else None,
     )
     if args.doctor:

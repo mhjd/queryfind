@@ -14,6 +14,7 @@ The benchmark side of the project exists, but it is intentionally out of scope f
 - Search both file paths and file contents.
 - Keep the runtime local-only.
 - Stream the model's reasoning trace and progress while the search is running.
+- Avoid requiring users to manually start Ollama. QueryFind should auto-start the local server when possible.
 - Return richer results than plain paths:
   - ranked matches
   - short explanations for each result
@@ -71,10 +72,11 @@ python -m queryfind "find the latest signed contract for client beta"
 Expected runtime flow:
 
 1. Show root inspection progress.
-2. Stream planner thinking.
-3. Execute visible read-only search commands.
-4. Stream ranking thinking.
-5. Print a ranked result set with evidence.
+2. Auto-start Ollama when needed and available locally.
+3. Stream planner thinking.
+4. Execute visible read-only search commands.
+5. Stream ranking thinking.
+6. Print a ranked result set with evidence.
 
 ## Notes
 

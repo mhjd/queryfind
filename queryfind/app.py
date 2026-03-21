@@ -30,8 +30,33 @@ def run_search(config: AppConfig) -> int:
             llm_available = client.available()
             if llm_available:
                 logger.info("local Ollama server available")
+            elif config.ollama_autostart:
+                server_log_path = logger.log_path.parent / f"ollama-serve-{timestamp}.log"
+                logger.info("local Ollama server unavailable; attempting automatic startup")
+                llm_available = client.ensure_running(
+                    timeout=config.ollama_start_timeout,
+                    server_log_path=server_log_path,
+                )
+                if llm_available:
+                    logger.info("local Ollama server started automatically")
+                else:
+                    logger.warn("automatic Ollama startup failed; using heuristic fallback")
             else:
                 logger.warn("local Ollama server unavailable; using heuristic fallback")
+            if llm_available:
+                try:
+                    tags = client.tags()
+                except Exception:
+                    tags = []
+                if not tags:
+                    logger.warn("Ollama is running but no models are installed; using heuristic fallback")
+                    llm_available = False
+                elif config.model not in tags:
+                    logger.warn(f"configured model not installed locally: {config.model}")
+                    llm_available = False
+            else:
+                client = None
+            if not llm_available:
                 client = None
         else:
             logger.info("LLM disabled by flag; using heuristic fallback")

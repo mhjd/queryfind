@@ -20,6 +20,8 @@ class AppConfig:
     max_results: int = 5
     no_llm: bool = False
     show_thinking: bool = True
+    ollama_autostart: bool = True
+    ollama_start_timeout: float = 12.0
     log_dir: Path | None = None
 
     @property

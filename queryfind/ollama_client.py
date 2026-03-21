@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+from pathlib import Path
+import shutil
+import subprocess
+import time
 from urllib import error, request
 
 
@@ -31,6 +35,44 @@ class OllamaClient:
         payload = self._request_json("GET", "/api/tags")
         models = payload.get("models", [])
         return [item.get("name", "") for item in models]
+
+    def ensure_running(self, *, timeout: float, server_log_path: Path | None = None) -> bool:
+        if self.available():
+            return True
+        if shutil.which("ollama") is None:
+            return False
+
+        stdout_handle = None
+        stdout_target: int | subprocess.PIPE | None = subprocess.DEVNULL
+        stderr_target: int | subprocess.PIPE | None = subprocess.DEVNULL
+        if server_log_path is not None:
+            server_log_path.parent.mkdir(parents=True, exist_ok=True)
+            stdout_handle = server_log_path.open("a", encoding="utf-8")
+            stdout_target = stdout_handle
+            stderr_target = subprocess.STDOUT
+
+        try:
+            subprocess.Popen(
+                ["ollama", "serve"],
+                stdin=subprocess.DEVNULL,
+                stdout=stdout_target,
+                stderr=stderr_target,
+                start_new_session=True,
+            )
+        except OSError:
+            if stdout_handle is not None:
+                stdout_handle.close()
+            return False
+        finally:
+            if stdout_handle is not None:
+                stdout_handle.close()
+
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if self.available():
+                return True
+            time.sleep(0.25)
+        return False
 
     def chat_stream(
         self,

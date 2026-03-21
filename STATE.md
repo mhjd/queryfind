@@ -22,7 +22,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 
 ## Next Steps
 
-1. Validate streamed planning and ranking against a running local Ollama server.
+1. Install and validate a real local model so streamed planning and ranking can run end to end after auto-start.
 2. Improve ranking quality on real-world directories with prompt and scoring refinements.
 3. Add stronger file-type handling for formats like PDF and Office documents.
-4. Expand tests around metadata handling and planner parsing.
+4. Expand tests around metadata handling, planner parsing, and auto-start edge cases.

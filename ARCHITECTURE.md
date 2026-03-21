@@ -24,12 +24,13 @@
 
 1. Parse CLI arguments.
 2. Validate required search tools.
-3. Inspect the root directory with `tree` or `ls`.
-4. Ask the local model for a structured search intent when available.
-5. Compile that intent into allowlisted `fd`, `rg`, `stat`, and `mdls` calls.
-6. Merge and score candidate files from path and content evidence.
-7. Ask the local model to rank and summarize candidates when available.
-8. Render ranked results and keep a timestamped log file.
+3. Auto-start `ollama serve` when the configured local endpoint is down and auto-start is enabled.
+4. Inspect the root directory with `tree` or `ls`.
+5. Ask the local model for a structured search intent when available.
+6. Compile that intent into allowlisted `fd`, `rg`, `stat`, and `mdls` calls.
+7. Merge and score candidate files from path and content evidence.
+8. Ask the local model to rank and summarize candidates when available.
+9. Render ranked results and keep a timestamped log file.
 
 ## Safety Model
 
