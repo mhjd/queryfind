@@ -10,6 +10,7 @@
 - Added `rg --no-config` plus a reduced subprocess environment so ambient ripgrep config does not silently modify command behavior.
 - Added regression tests for invalid allowed-command flags, suspicious leading-dash terms, symlink root escapes, trusted-binary resolution, and stripped ripgrep config inheritance.
 - Verified the hardened path locally with `source .venv/bin/activate && python -m pytest -q` and `source .venv/bin/activate && make test`, both passing 27 tests.
+- Enforced loopback-only Ollama endpoints by default, added an explicit `--allow-remote-ollama` escape hatch, and prevented automatic local-server startup for non-local URLs.
 
 ## 2026-03-21
 

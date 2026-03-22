@@ -62,6 +62,12 @@ Commands intentionally excluded from the agent surface for now:
 - destructive file operations
 - external network tools
 
+Ollama endpoint policy:
+
+- Default endpoint must stay on loopback such as `127.0.0.1`, `localhost`, or `::1`.
+- Non-local Ollama URLs require an explicit operator opt-in.
+- Automatic `ollama serve` startup is only valid for local endpoints.
+
 ## Interface
 
 Typical usage:

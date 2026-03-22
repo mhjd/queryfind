@@ -36,6 +36,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-results", type=int, default=5, help="Maximum ranked results to display.")
     parser.add_argument("--no-llm", action="store_true", help="Disable Ollama and use heuristics only.")
     parser.add_argument(
+        "--allow-remote-ollama",
+        action="store_true",
+        help="Allow sending prompts and file evidence to a non-local Ollama endpoint.",
+    )
+    parser.add_argument(
         "--no-ollama-autostart",
         action="store_true",
         help="Do not auto-start Ollama when it is not already running.",
@@ -79,6 +84,7 @@ def main(argv: list[str] | None = None) -> int:
         no_llm=bool(args.no_llm),
         show_thinking=not bool(args.hide_thinking),
         ollama_autostart=not bool(args.no_ollama_autostart),
+        allow_remote_ollama=bool(args.allow_remote_ollama),
         ollama_start_timeout=max(1.0, args.ollama_start_timeout),
         log_dir=Path(args.log_dir) if args.log_dir else None,
     )

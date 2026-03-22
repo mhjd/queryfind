@@ -9,7 +9,12 @@ from unittest import mock
 
 from queryfind.app import execute_search, prewarm_search_client
 from queryfind.config import AppConfig
-from queryfind.ollama_client import OllamaChunk, OllamaClient, OllamaUnavailableError
+from queryfind.ollama_client import (
+    OllamaChunk,
+    OllamaClient,
+    OllamaConfigurationError,
+    OllamaUnavailableError,
+)
 from queryfind.benchmark import (
     EXTENDED_BENCHMARK_MANIFEST_PATH,
     HANDMADE_BENCHMARK_MANIFEST_PATH,
@@ -341,6 +346,40 @@ class QueryFindTests(unittest.TestCase):
                 started = client.ensure_running(timeout=1.0, server_log_path=log_path)
             self.assertTrue(started)
             popen_mock.assert_called_once()
+
+    def test_ollama_client_rejects_remote_url_by_default(self) -> None:
+        with self.assertRaises(OllamaConfigurationError):
+            OllamaClient("https://example.com:11434")
+
+    def test_ollama_client_allows_remote_url_with_explicit_opt_in(self) -> None:
+        client = OllamaClient("https://example.com:11434", allow_remote=True)
+        self.assertFalse(client.endpoint_is_local)
+
+    def test_remote_ollama_endpoint_does_not_autostart_local_server(self) -> None:
+        from queryfind.app import resolve_search_client
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = RunLogger(Path(tmpdir) / "test.log", echo=False)
+            try:
+                config = AppConfig(
+                    query="find contract",
+                    root=Path(tmpdir),
+                    no_llm=False,
+                    ollama_url="https://example.com:11434",
+                    allow_remote_ollama=True,
+                    ollama_autostart=True,
+                )
+                with (
+                    mock.patch("queryfind.app.OllamaClient.available", return_value=False),
+                    mock.patch("queryfind.app.OllamaClient.ensure_running") as ensure_running_mock,
+                ):
+                    client = resolve_search_client(config, logger, timestamp="20260322-remote")
+            finally:
+                logger.close()
+            self.assertIsNone(client)
+            ensure_running_mock.assert_not_called()
+            log_text = (Path(tmpdir) / "test.log").read_text(encoding="utf-8")
+            self.assertIn("automatic startup is disabled for non-local URLs", log_text)
 
     def test_structured_outputs_do_not_enable_thinking(self) -> None:
         from queryfind.ollama_client import resolve_think_value

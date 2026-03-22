@@ -70,6 +70,7 @@ python -m queryfind.benchmark --manifest benchmark_fs/handmade100_manifest.json 
 ## Notes
 
 - QueryFind auto-starts Ollama when possible.
-- LLM mode is local-only and read-only, and backend command execution is constrained to trusted macOS binaries plus validated read-only argv shapes.
+- LLM mode is local-only and read-only by default. Non-local Ollama URLs are rejected unless `--allow-remote-ollama` is passed explicitly.
+- Backend command execution is constrained to trusted macOS binaries plus validated read-only argv shapes.
 - Heuristic mode is available explicitly with `--no-llm`.
 - Logs are written under `.queryfind/`.

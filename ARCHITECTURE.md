@@ -9,7 +9,7 @@
   - `config.py`: runtime defaults and configuration dataclass.
   - `models.py`: shared dataclasses for intents, agent actions and observations, candidates, and outcomes.
   - `logging_utils.py`: timestamped stdout and file logging with streamed sections.
-  - `ollama_client.py`: local Ollama HTTP streaming client.
+- `ollama_client.py`: local-first Ollama HTTP client with loopback-only enforcement by default and explicit remote opt-in.
   - `planner.py`: heuristic fallback, iterative LLM action selection, and final candidate ranking.
   - `search_backend.py`: allowlisted command runner and file-system search pipeline, including per-action observations and warnings.
   - `render.py`: terminal result rendering with Rich when available.
@@ -62,5 +62,5 @@
 - The backend validates each argv shape before execution, so model terms cannot turn into extra flags.
 - Search stays inside the declared root even when symlinks point elsewhere.
 - `rg` runs with `--no-config`, and subprocesses inherit only a small trusted environment.
-- Network use is limited to the local Ollama API.
+- Network use is limited to a loopback Ollama API by default; remote Ollama endpoints require explicit opt-in and do not support automatic local-server startup.
 - Heuristic search remains available only as an explicit mode for tests and baselines; LLM mode no longer silently falls back to heuristic execution.

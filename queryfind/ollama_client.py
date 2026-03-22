@@ -6,11 +6,16 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+from urllib.parse import urlparse
 from urllib import error, request
 
 
 class OllamaUnavailableError(RuntimeError):
     """Raised when the local Ollama server is unavailable."""
+
+
+class OllamaConfigurationError(ValueError):
+    """Raised when the Ollama endpoint configuration is unsafe."""
 
 
 @dataclass(slots=True)
@@ -21,9 +26,21 @@ class OllamaChunk:
 
 
 class OllamaClient:
-    def __init__(self, base_url: str, *, request_timeout: float = 30.0) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        request_timeout: float = 30.0,
+        allow_remote: bool = False,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.request_timeout = request_timeout
+        self.allow_remote = allow_remote
+        self._endpoint_host = self._validated_endpoint_host()
+
+    @property
+    def endpoint_is_local(self) -> bool:
+        return self._endpoint_host in {"127.0.0.1", "localhost", "::1"}
 
     def available(self) -> bool:
         try:
@@ -40,6 +57,8 @@ class OllamaClient:
     def ensure_running(self, *, timeout: float, server_log_path: Path | None = None) -> bool:
         if self.available():
             return True
+        if not self.endpoint_is_local:
+            return False
         if shutil.which("ollama") is None:
             return False
 
@@ -116,6 +135,18 @@ class OllamaClient:
         except (error.URLError, ConnectionError, TimeoutError) as exc:
             raise OllamaUnavailableError(str(exc)) from exc
 
+    def _validated_endpoint_host(self) -> str:
+        parsed = urlparse(self.base_url)
+        if parsed.scheme not in {"http", "https"}:
+            raise OllamaConfigurationError("Ollama URL must use http or https")
+        if not parsed.hostname:
+            raise OllamaConfigurationError("Ollama URL must include a host")
+        if not self.allow_remote and parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+            raise OllamaConfigurationError(
+                "Remote Ollama endpoints are disabled by default; use --allow-remote-ollama to opt in"
+            )
+        return parsed.hostname
+
     def chat_json(
         self,
         *,
@@ -171,6 +202,5 @@ class OllamaClient:
 
 
 def resolve_think_value(model: str, think_level: str) -> str | bool:
-    if model.startswith("gpt-oss"):
-        return think_level
+    del model, think_level
     return False

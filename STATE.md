@@ -8,6 +8,7 @@ Agent steps now stream even in hidden-thinking mode so timeout diagnosis can dis
 Benchmark runs now prewarm the selected Ollama model and request a long keep-alive so cold-start and model eviction are less misleading.
 The current accepted general agent prompt is the concise content-vs-path guidance variant in `queryfind/planner.py`.
 The command sandbox has been hardened so execution now uses trusted macOS command paths, validated argv shapes, root containment checks, and a repo-local `.venv` workflow for Python commands and tests.
+Ollama access is now loopback-only by default, with explicit remote opt-in and no autostart for non-local endpoints.
 The original 19-case suite remains available in `benchmark_fs/full_manifest.json`, and a new 40-case suite now exists in `benchmark_fs/extended_manifest.json`.
 Two larger suites now exist as well: the generated `benchmark_fs/mega_manifest.json` and the handcrafted `benchmark_fs/handmade100_manifest.json`, which now contains 125 cases over a deliberately messy mixed company/personal filesystem.
 Latest benchmark results with the current prompt:

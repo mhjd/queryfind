@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+
 DEFAULT_MODEL = "qwen3.5:27b"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 ALLOWED_COMMANDS = ("fd", "rg", "ls", "tree", "stat", "mdls")
@@ -32,6 +33,7 @@ class AppConfig:
     no_llm: bool = False
     show_thinking: bool = True
     ollama_autostart: bool = True
+    allow_remote_ollama: bool = False
     ollama_start_timeout: float = 12.0
     log_dir: Path | None = None
 

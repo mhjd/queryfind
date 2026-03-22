@@ -6,23 +6,30 @@ import time
 from queryfind.config import AppConfig
 from queryfind.logging_utils import RunLogger
 from queryfind.models import AgentStep, SearchExecution
-from queryfind.ollama_client import OllamaClient
+from queryfind.ollama_client import OllamaClient, OllamaConfigurationError
 from queryfind.planner import heuristic_intent, next_agent_action, rank_results
 from queryfind.render import render_outcome
 from queryfind.search_backend import SearchBackend
 
 
 def resolve_search_client(config: AppConfig, logger: RunLogger, *, timestamp: str) -> OllamaClient | None:
-    client = None if config.no_llm else OllamaClient(
-        config.ollama_url,
-        request_timeout=config.ollama_request_timeout,
-    )
+    client = None
+    if not config.no_llm:
+        try:
+            client = OllamaClient(
+                config.ollama_url,
+                request_timeout=config.ollama_request_timeout,
+                allow_remote=config.allow_remote_ollama,
+            )
+        except OllamaConfigurationError as exc:
+            logger.error(f"invalid Ollama configuration: {exc}")
+            return None
     llm_available = False
     if client is not None:
         llm_available = client.available()
         if llm_available:
             logger.info("local Ollama server available")
-        elif config.ollama_autostart:
+        elif config.ollama_autostart and client.endpoint_is_local:
             server_log_path = logger.log_path.parent / f"ollama-serve-{timestamp}.log"
             logger.info("local Ollama server unavailable; attempting automatic startup")
             llm_available = client.ensure_running(
@@ -33,6 +40,8 @@ def resolve_search_client(config: AppConfig, logger: RunLogger, *, timestamp: st
                 logger.info("local Ollama server started automatically")
             else:
                 logger.warn("automatic Ollama startup failed")
+        elif config.ollama_autostart and not client.endpoint_is_local:
+            logger.warn("remote Ollama endpoint configured; automatic startup is disabled for non-local URLs")
         else:
             logger.warn("local Ollama server unavailable")
         if llm_available:
@@ -181,7 +190,16 @@ def run_doctor(config: AppConfig) -> int:
         else:
             logger.info("optional commands available: ls, tree, stat, mdls")
 
-        client = OllamaClient(config.ollama_url, request_timeout=config.ollama_request_timeout)
+        try:
+            client = OllamaClient(
+                config.ollama_url,
+                request_timeout=config.ollama_request_timeout,
+                allow_remote=config.allow_remote_ollama,
+            )
+        except OllamaConfigurationError as exc:
+            logger.error(f"invalid Ollama configuration: {exc}")
+            logger.info(f"log file: {logger.log_path}")
+            return 2
         if client.available():
             tags = client.tags()
             logger.info(f"Ollama reachable at {config.ollama_url}")
