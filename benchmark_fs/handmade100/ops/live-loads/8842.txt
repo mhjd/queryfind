@@ -1,0 +1,3 @@
+Shipment: 8842
+            Current status: awaiting reefer battery replacement
+            Last action: swap trailer battery cassette

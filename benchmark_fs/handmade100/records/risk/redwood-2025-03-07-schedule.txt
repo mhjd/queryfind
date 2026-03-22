@@ -1,0 +1,5 @@
+Client: Redwood Industrial
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-03-07
+            Control note: Telemetry history is retained for 180 days.

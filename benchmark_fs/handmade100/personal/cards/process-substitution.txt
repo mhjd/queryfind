@@ -1,0 +1,3 @@
+Comparing command output
+            diff <(sort old.txt) <(sort new.txt)
+            Nice when I want to compare transformed output without temp files.

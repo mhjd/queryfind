@@ -1,0 +1,5 @@
+Client: Orchid Labs
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-02-08
+            Control note: Shared handheld PINs rotate every 30 days.

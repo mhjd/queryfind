@@ -1,0 +1,6 @@
+Pier West = Harbor 7
+        Yard 4 = North Quay
+        Switchback = Raven Terminal
+        Produce Wing = Orchard Dock
+        South Ramp = Sunset Depot
+        Stone Pier = Granite Wharf

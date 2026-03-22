@@ -1,0 +1,5 @@
+Client: Summit Fresh Foods
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-03-02
+            Control note: Visitor badges must be surrendered before shift close.

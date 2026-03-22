@@ -42,3 +42,24 @@
 - Verified the accepted general prompt on `qwen3-coder:30b`; the latest full run reached 14/19 success, 12/19 top-1, 10/14 snippet success, and 2/2 negative-case success.
 - Added a top-level `README.md` with a short project overview, install steps, and primary usage examples.
 - Updated `AGENTS.md` so future work explicitly keeps `README.md` synchronized with installation, setup, and user-visible command changes.
+- Added `benchmark_fs/extended_manifest.json`, a 40-case benchmark suite that keeps the original 19 cases intact and adds 21 more cases over the same corpus root.
+- Added more benchmark corpus files covering additional weekly updates, rollback notes, ownership notes, on-call rotations, shipment 8842, keypad access, device inventory, hidden project aliases, and an extra hiring scorecard.
+- Added `--manifest` support to `queryfind.benchmark` plus Makefile shortcuts for the extended suite.
+- Validated the new benchmark path locally with `python3 -m unittest discover -s tests -v` and a small heuristic subset run on the extended manifest.
+- Re-ran the original 19-case suite with the current general prompt: `qwen3-coder:30b` scored 14/19, `glm-4.7-flash:latest` scored 15/19, and `gpt-oss:20b` scored 2/19.
+- Ran the new 40-case suite: `qwen3-coder:30b` scored 28/40, `glm-4.7-flash:latest` scored 32/40, and `gpt-oss:20b` scored 6/40.
+- Observed a clear `gpt-oss:20b` integration failure mode in the current agent loop: many streamed turns arrive but do not parse as valid action JSON, so the runtime finishes early with no search.
+- Added `benchmark_fs/mega_manifest.json`, a generated 100-case benchmark over a 129-file corpus, plus `benchmark_fs/generate_large_benchmark.py` to rebuild it.
+- Increased benchmark report timestamp granularity so sequential runs do not collide as easily at the JSON report path.
+- Added `benchmark_fs/handmade100_manifest.json` plus `benchmark_fs/handmade100/`, a handcrafted 100-case benchmark over a 92-file realistic synthetic filesystem with hidden aliases, customer nicknames, program codenames, vendor shorthand, and cross-file hops.
+- Added `benchmark_fs/build_handmade100.py` to rebuild the handcrafted suite from curated scenario data.
+- Added loader constants, Make targets, and smoke tests for the handcrafted suite.
+- Validated the handcrafted suite structurally with `python3 -m unittest discover -s tests -v` and a heuristic subset run.
+- Ran a 5-case representative probe on the handcrafted suite; both `glm-4.7-flash:latest` and `qwen3-coder:30b` scored 1/5, which confirms the suite is substantially harder than the previous corpora and currently stresses the alias-to-target second hop.
+- Expanded the handcrafted suite with a new `personal` category: 25 additional cases and a large personal subtree covering journals, shell-course notes, travel notes, recipes, home-lab notes, reading notes, health notes, budgeting, and gift ideas.
+- The handcrafted suite now has 125 cases over 128 files.
+- Reshaped the handcrafted filesystem so the company side is messy too: contracts, site docs, shipment notes, project files, vendor files, alias maps, facilities, and security notes now live in shared hubs rather than clean per-domain directories.
+- Reworked the personal subtree again so course notes and personal records are scattered across mixed folders instead of obvious topic buckets.
+- Rebuilt the handcrafted suite after the layout changes; it now has 125 cases over 138 files.
+- Ran the full handcrafted 125-case suite on `glm-4.7-flash:latest`: 90/125 success, 82/125 top-1, 84/112 snippet success, 2/2 no-answer, MRR 0.7587.
+- Ran the full handcrafted 125-case suite on `qwen3-coder:30b`: 75/125 success, 68/125 top-1, 70/112 snippet success, 2/2 no-answer, MRR 0.6333.

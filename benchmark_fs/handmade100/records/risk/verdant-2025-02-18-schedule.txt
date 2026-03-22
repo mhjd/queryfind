@@ -1,0 +1,5 @@
+Client: Verdant Sensors
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-02-18
+            Control note: USB export on handhelds stays disabled by default.

@@ -1,0 +1,3 @@
+SSH config reminders
+            Match exec is useful but can get unreadable fast.
+            Keep prod aliases obvious.

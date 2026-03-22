@@ -1,0 +1,6 @@
+bay aquarium account = BlueHarbor Marine
+        battery recycler account = Faraday Recycling
+        midwest produce consolidator = Summit Fresh Foods
+        greenhouse sensor client = Verdant Sensors
+        lab freezer account = Orchid Labs
+        dock label modernization client = Redwood Industrial

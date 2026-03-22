@@ -16,7 +16,7 @@
   - `benchmark.py`: full benchmark runner with correctness, timing, and agent-turn usage summaries.
   - `synthetic_eval.py`: small first-filter evaluation runner for the synthetic corpus.
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
-- `benchmark_fs/`: fuller benchmark corpus plus manifest for model comparison.
+- `benchmark_fs/`: benchmark corpora and manifests, including the original 19-case suite, the 40-case extended suite, the generated 100-case mega suite, and the handcrafted 100-case suite.
 - `synthetic_fs/`: small static synthetic filesystem for early search validation.
 - `pyproject.toml`: package metadata and pinned runtime dependency declaration.
 - `Makefile`: project commands.
@@ -47,8 +47,13 @@
 ## Benchmarking
 
 - `benchmark_fs/full/` provides a larger static corpus with stronger ambiguity and more varied domains.
-- `benchmark_fs/full_manifest.json` defines benchmark cases and normalized file mtimes.
-- `queryfind.benchmark` runs the real agent/search/ranker pipeline, measures correctness and latency, records step counts and actual LLM turn usage, supports case/category/difficulty filtering, and writes a JSON report.
+- `benchmark_fs/full_manifest.json` keeps the original 19-case suite.
+- `benchmark_fs/extended_manifest.json` defines the 40-case extended suite that reuses the same corpus root with more cases, aliases, negatives, and distractors.
+- `benchmark_fs/mega/` plus `benchmark_fs/mega_manifest.json` provide a generated 100-case scale suite.
+- `benchmark_fs/handmade100/` plus `benchmark_fs/handmade100_manifest.json` provide a handcrafted 125-case suite with realistic aliases, indirect clues, multi-file hops, and deliberately messy company plus personal subtrees.
+- `benchmark_fs/generate_large_benchmark.py` rebuilds the generated mega suite.
+- `benchmark_fs/build_handmade100.py` rebuilds the handcrafted suite from curated scenario data.
+- `queryfind.benchmark` runs the real agent/search/ranker pipeline, measures correctness and latency, records step counts and actual LLM turn usage, supports case/category/difficulty filtering, accepts a `--manifest` selector, and writes a JSON report.
 
 ## Safety Model
 

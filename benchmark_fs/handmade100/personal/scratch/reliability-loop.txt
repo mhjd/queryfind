@@ -1,0 +1,4 @@
+Reliability drills
+            Retry an occasionally flaky command:
+            until make test; do sleep 5; done
+            Good enough for noisy local integration tests.

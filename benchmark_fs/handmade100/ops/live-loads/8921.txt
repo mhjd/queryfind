@@ -1,0 +1,3 @@
+Shipment: 8921
+            Current status: blocked on pallet count correction
+            Last action: broker must add pallet counts to export packet

@@ -1,0 +1,5 @@
+Client: BlueHarbor Marine
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-03-10
+            Control note: Guest credentials expire after 24 hours.

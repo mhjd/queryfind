@@ -1,0 +1,4 @@
+Shell history cleanup
+            Remove the last command before sharing a terminal screenshot:
+            history -d $(history 1 | awk '{print $1}')
+            Then run history -w if I want it flushed.

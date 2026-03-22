@@ -1,0 +1,5 @@
+Beacon = Atlas
+        Bridgebook = Lantern
+        Dispatch Glass = Northstar
+        Ledger Cleanup = Quartz
+        Camera Retention = Tidewatch

@@ -1,0 +1,3 @@
+Tmux notes
+            Copy mode is still easiest with prefix + [ then vi motions.
+            I always forget the search bindings if I do not write them down.

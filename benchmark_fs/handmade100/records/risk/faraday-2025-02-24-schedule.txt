@@ -1,0 +1,5 @@
+Client: Faraday Recycling
+            Document: Security Schedule
+            Status: executed
+            Signed date: 2025-02-24
+            Control note: Courier chain-of-custody photos stay available for 90 days.
