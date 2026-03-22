@@ -1,4 +1,3 @@
-For now, don't pay attention to the benchmark side of the project, and focus on making it work on macOS. These two point will be handled later.
 # Reliability
 - Choose the most reliable option, prioritizing correctness, reproducibility, and low risk.
 - Run and fix code until it works, except when execution is costly (for example API calls). In that case, validate on a small subset first before scaling.

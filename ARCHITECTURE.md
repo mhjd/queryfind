@@ -16,8 +16,9 @@
   - `benchmark.py`: full benchmark runner with correctness, timing, and agent-turn usage summaries.
   - `synthetic_eval.py`: small first-filter evaluation runner for the synthetic corpus.
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
-- `benchmark_fs/`: benchmark corpora and manifests, including the original 19-case suite, the 40-case extended suite, the generated 100-case mega suite, and the handcrafted 100-case suite.
+- `benchmark_fs/`: benchmark corpora and manifests, including the original 19-case suite, the 40-case extended suite, the generated 100-case mega suite, and the handcrafted 125-case suite.
 - `synthetic_fs/`: small static synthetic filesystem for early search validation.
+- `permanent_tasks_loop/`: prompt-tuning loop instructions plus append-only iteration history for system-prompt refinement work.
 - `pyproject.toml`: package metadata plus pinned runtime and dev dependency declaration.
 - `Makefile`: project commands, including `.venv` bootstrap and the pytest test entrypoint.
 - `README.md`: quick user-facing overview, install steps, and primary commands.
