@@ -1,5 +1,16 @@
 # Progress
 
+## 2026-03-22
+
+- Created a repo-local `.venv`, installed the package editable plus pinned `pytest`, and updated `AGENTS.md` so future Python commands run through `source .venv/bin/activate && ...`.
+- Added a `dev` extra in `pyproject.toml` and changed `make venv` plus `make test` to install and run the reproducible test toolchain through the repo-local virtualenv.
+- Hardened the search backend so allowed commands resolve only from trusted macOS command directories instead of ambient `PATH`.
+- Added explicit argv validation for `fd`, `rg`, `ls`, `tree`, `stat`, and `mdls`, preventing model-supplied search terms from becoming extra flags on allowlisted binaries.
+- Removed `fd --follow`, enforced root containment on discovered paths and metadata lookups, and blocked symlink-based escapes outside the declared search root.
+- Added `rg --no-config` plus a reduced subprocess environment so ambient ripgrep config does not silently modify command behavior.
+- Added regression tests for invalid allowed-command flags, suspicious leading-dash terms, symlink root escapes, trusted-binary resolution, and stripped ripgrep config inheritance.
+- Verified the hardened path locally with `source .venv/bin/activate && python -m pytest -q` and `source .venv/bin/activate && make test`, both passing 27 tests.
+
 ## 2026-03-21
 
 - Clarified V1 scope around macOS-first delivery, local-only runtime, path and content search, richer ranked output, and streamed reasoning/progress.

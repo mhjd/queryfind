@@ -18,8 +18,8 @@
 - `tests/test_queryfind.py`: smoke tests for the heuristic baseline and CLI path.
 - `benchmark_fs/`: benchmark corpora and manifests, including the original 19-case suite, the 40-case extended suite, the generated 100-case mega suite, and the handcrafted 100-case suite.
 - `synthetic_fs/`: small static synthetic filesystem for early search validation.
-- `pyproject.toml`: package metadata and pinned runtime dependency declaration.
-- `Makefile`: project commands.
+- `pyproject.toml`: package metadata plus pinned runtime and dev dependency declaration.
+- `Makefile`: project commands, including `.venv` bootstrap and the pytest test entrypoint.
 - `README.md`: quick user-facing overview, install steps, and primary commands.
 - `PROJECT.md`: product scope and command policy.
 - `STATE.md`: current work state and next steps.
@@ -32,7 +32,7 @@
 3. Auto-start `ollama serve` when the configured local endpoint is down and auto-start is enabled.
 4. Inspect the root directory with `tree` or `ls`.
 5. Ask the local model for the next bounded search action when available.
-6. Compile that action into allowlisted `fd`, `rg`, `stat`, and `mdls` calls.
+6. Compile that action into fixed read-only `fd`, `rg`, `stat`, and `mdls` argv shapes.
 7. Convert command results and warnings into an observation summary and feed it back into the next step.
 8. Repeat until the agent finishes or the step budget is exhausted.
 9. Ask the local model to rank and summarize candidates when available.
@@ -58,7 +58,9 @@
 ## Safety Model
 
 - The LLM never runs shell directly.
-- The backend enforces an explicit executable allowlist.
-- Search is read-only.
+- The backend resolves allowed commands only from trusted macOS system and Homebrew directories.
+- The backend validates each argv shape before execution, so model terms cannot turn into extra flags.
+- Search stays inside the declared root even when symlinks point elsewhere.
+- `rg` runs with `--no-config`, and subprocesses inherit only a small trusted environment.
 - Network use is limited to the local Ollama API.
 - Heuristic search remains available only as an explicit mode for tests and baselines; LLM mode no longer silently falls back to heuristic execution.

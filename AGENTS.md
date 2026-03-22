@@ -5,6 +5,7 @@ For now, don't pay attention to the benchmark side of the project, and focus on 
 - Commit working changes. Before risky refactors, commit first so rollback is easy.
 - Never expose secrets or API keys.
 - Default to isolated environments and pinned versions for dependencies and runtimes.
+- Use the repo-local Python virtual environment for Python-related work. Create `.venv` if missing, and run commands through `source .venv/bin/activate && ...` so installs, tests, and scripts stay isolated and reproducible.
 
 # Logs
 - Long-running or critical paths must produce clear logs so progress and failures are visible.

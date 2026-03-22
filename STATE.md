@@ -7,6 +7,7 @@ Automatic heuristic fallback has been removed from LLM mode so benchmark and run
 Agent steps now stream even in hidden-thinking mode so timeout diagnosis can distinguish "no output at all" from "partial progress".
 Benchmark runs now prewarm the selected Ollama model and request a long keep-alive so cold-start and model eviction are less misleading.
 The current accepted general agent prompt is the concise content-vs-path guidance variant in `queryfind/planner.py`.
+The command sandbox has been hardened so execution now uses trusted macOS command paths, validated argv shapes, root containment checks, and a repo-local `.venv` workflow for Python commands and tests.
 The original 19-case suite remains available in `benchmark_fs/full_manifest.json`, and a new 40-case suite now exists in `benchmark_fs/extended_manifest.json`.
 Two larger suites now exist as well: the generated `benchmark_fs/mega_manifest.json` and the handcrafted `benchmark_fs/handmade100_manifest.json`, which now contains 125 cases over a deliberately messy mixed company/personal filesystem.
 Latest benchmark results with the current prompt:
@@ -26,6 +27,7 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 - iterative `LLM -> tool -> observe -> revise` search flow
 - streaming-friendly local Ollama integration
 - richer ranked results
+- stricter command sandboxing for read-only search execution
 - synthetic filesystem smoke evaluation
 - fuller benchmark corpus and runner
 - handcrafted 125-case benchmark corpus with indirect clues, alias-driven hops, and a deliberately messy mixed company/personal layout
@@ -43,3 +45,4 @@ Stabilize and iterate on the first macOS-first QueryFind baseline:
 2. Improve the action prompts so models do not over-constrain themselves with bad extension filters or miss obvious content-first cases.
 3. Add stronger file-type handling for formats like PDF and Office documents.
 4. Tune the agent loop against the handcrafted benchmark so models continue past alias files and complete the second hop to the real answer file.
+5. Consider whether self-generated log files under the search root should remain searchable or move outside the root by default.

@@ -10,8 +10,14 @@ from unittest import mock
 from queryfind.app import execute_search, prewarm_search_client
 from queryfind.config import AppConfig
 from queryfind.ollama_client import OllamaChunk, OllamaClient, OllamaUnavailableError
-from queryfind.benchmark import load_manifest, run_benchmark
-from queryfind.models import SearchCandidate
+from queryfind.benchmark import (
+    EXTENDED_BENCHMARK_MANIFEST_PATH,
+    HANDMADE_BENCHMARK_MANIFEST_PATH,
+    MEGA_BENCHMARK_MANIFEST_PATH,
+    load_manifest,
+    run_benchmark,
+)
+from queryfind.models import SearchCandidate, SearchIntent
 from queryfind.planner import heuristic_intent, next_agent_action
 from queryfind.search_backend import SearchBackend
 from queryfind.logging_utils import RunLogger
@@ -48,6 +54,92 @@ class QueryFindTests(unittest.TestCase):
                 self.assertEqual(candidates, [])
             finally:
                 logger.close()
+
+    def test_backend_rejects_invalid_flags_for_allowlisted_command(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                with self.assertRaises(ValueError):
+                    backend._run(["rg", "--files", str(root)], allowed_returncodes={0})  # noqa: SLF001
+            finally:
+                logger.close()
+
+    def test_backend_skips_suspicious_leading_dash_terms(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "note.txt").write_text("hello world\n", encoding="utf-8")
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                candidates = backend.search(
+                    SearchIntent(query_summary="find hello", content_terms=["--files"], path_terms=["--files"])
+                )
+            finally:
+                logger.close()
+            self.assertEqual(candidates, [])
+            log_text = (root / "test.log").read_text(encoding="utf-8")
+            self.assertIn("skipped suspicious term", log_text)
+
+    def test_backend_search_does_not_escape_root_via_symlink(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            tempfile.TemporaryDirectory() as outside_tmpdir,
+            tempfile.TemporaryDirectory() as log_tmpdir,
+        ):
+            root = Path(tmpdir)
+            outside_root = Path(outside_tmpdir)
+            outside_file = outside_root / "outside-secret.txt"
+            outside_file.write_text("secret\n", encoding="utf-8")
+            (root / "outside-link.txt").symlink_to(outside_file)
+            logger = RunLogger(Path(log_tmpdir) / "test.log", echo=False)
+            try:
+                backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                candidates = backend.search(
+                    SearchIntent(
+                        query_summary="find outside link",
+                        path_terms=["outside"],
+                        filename_hints=["outside"],
+                    )
+                )
+            finally:
+                logger.close()
+            self.assertEqual(candidates, [])
+
+    def test_backend_uses_trusted_binaries_instead_of_path_precedence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as log_tmpdir:
+            root = Path(tmpdir)
+            fake_bin = root / "fake-bin"
+            fake_bin.mkdir()
+            marker = root / "fake-rg-hit.txt"
+            fake_rg = fake_bin / "rg"
+            fake_rg.write_text(f"#!/bin/sh\necho fake >> {marker}\nexit 0\n", encoding="utf-8")
+            fake_rg.chmod(0o755)
+            (root / "note.txt").write_text("hello world\n", encoding="utf-8")
+            logger = RunLogger(Path(log_tmpdir) / "test.log", echo=False)
+            try:
+                with mock.patch.dict("os.environ", {"PATH": f"{fake_bin}:{root}"}, clear=False):
+                    backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                    candidates = backend.search(
+                        SearchIntent(query_summary="find hello", content_terms=["hello"])
+                    )
+            finally:
+                logger.close()
+            self.assertFalse(marker.exists())
+            self.assertEqual([candidate.path.name for candidate in candidates], ["note.txt"])
+
+    def test_backend_command_env_does_not_inherit_ripgrep_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            logger = RunLogger(root / "test.log", echo=False)
+            try:
+                with mock.patch.dict("os.environ", {"RIPGREP_CONFIG_PATH": "/tmp/evil-rg-config"}, clear=False):
+                    backend = SearchBackend(root=root, logger=logger, max_candidates=5)
+                    env = backend._command_env()  # noqa: SLF001
+            finally:
+                logger.close()
+            self.assertNotIn("RIPGREP_CONFIG_PATH", env)
 
     def test_cli_search_without_llm_finds_matching_file(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
@@ -250,11 +342,43 @@ class QueryFindTests(unittest.TestCase):
             self.assertTrue(started)
             popen_mock.assert_called_once()
 
-    def test_non_gpt_oss_models_do_not_enable_thinking(self) -> None:
+    def test_structured_outputs_do_not_enable_thinking(self) -> None:
         from queryfind.ollama_client import resolve_think_value
 
         self.assertFalse(resolve_think_value("qwen3.5:27b", "medium"))
-        self.assertEqual(resolve_think_value("gpt-oss:20b", "medium"), "medium")
+        self.assertFalse(resolve_think_value("gpt-oss:20b", "medium"))
+
+    def test_agent_step_can_use_streamed_thinking_when_content_is_empty(self) -> None:
+        class FakeThinkingOnlyClient:
+            def chat_stream(
+                self,
+                *,
+                model: str,
+                messages: list[dict[str, str]],
+                think: str | bool,
+                keep_alive: str | int | None = None,
+            ):
+                del model, messages, think, keep_alive
+                yield OllamaChunk(thinking='{"action":"finish","terms":[],"extensions":[],"reasoning":"done","final_summary":"done"}')
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger = RunLogger(Path(tmpdir) / "test.log", echo=False)
+            try:
+                action = next_agent_action(
+                    "find contract",
+                    root_overview="contracts notes",
+                    candidates=[],
+                    steps=[],
+                    config=AppConfig(query="find contract", root=Path(tmpdir), no_llm=False, show_thinking=False),
+                    logger=logger,
+                    client=FakeThinkingOnlyClient(),  # type: ignore[arg-type]
+                )
+            finally:
+                logger.close()
+            self.assertEqual(action.action, "finish")
+            self.assertEqual(action.source, "ollama")
+            log_text = (Path(tmpdir) / "test.log").read_text(encoding="utf-8")
+            self.assertIn("using thinking text as parse fallback", log_text)
 
     def test_synthetic_eval_passes_without_llm(self) -> None:
         results = run_eval(use_llm=False)
@@ -264,6 +388,21 @@ class QueryFindTests(unittest.TestCase):
     def test_benchmark_manifest_loads(self) -> None:
         manifest = load_manifest()
         self.assertGreaterEqual(len(manifest.cases), 16)
+        self.assertTrue(manifest.corpus_root.exists())
+
+    def test_extended_benchmark_manifest_loads(self) -> None:
+        manifest = load_manifest(EXTENDED_BENCHMARK_MANIFEST_PATH)
+        self.assertEqual(len(manifest.cases), 40)
+        self.assertTrue(manifest.corpus_root.exists())
+
+    def test_mega_benchmark_manifest_loads(self) -> None:
+        manifest = load_manifest(MEGA_BENCHMARK_MANIFEST_PATH)
+        self.assertEqual(len(manifest.cases), 100)
+        self.assertTrue(manifest.corpus_root.exists())
+
+    def test_handmade_benchmark_manifest_loads(self) -> None:
+        manifest = load_manifest(HANDMADE_BENCHMARK_MANIFEST_PATH)
+        self.assertEqual(len(manifest.cases), 125)
         self.assertTrue(manifest.corpus_root.exists())
 
     def test_benchmark_runner_executes_subset_without_llm(self) -> None:
@@ -278,6 +417,45 @@ class QueryFindTests(unittest.TestCase):
         self.assertEqual(len(summaries), 1)
         self.assertTrue(report_path.exists())
         self.assertTrue(any(item.success for item in results))
+
+    def test_extended_benchmark_runner_executes_subset_without_llm(self) -> None:
+        _, results, summaries, report_path = run_benchmark(
+            manifest_path=EXTENDED_BENCHMARK_MANIFEST_PATH,
+            models=[],
+            include_heuristic=True,
+            case_names={"shipment_8842_delay_reason", "no_mercury_invoice"},
+            repeats=1,
+            quiet=True,
+        )
+        self.assertEqual(len(results), 2)
+        self.assertEqual(len(summaries), 1)
+        self.assertTrue(report_path.exists())
+
+    def test_mega_benchmark_runner_executes_subset_without_llm(self) -> None:
+        _, results, summaries, report_path = run_benchmark(
+            manifest_path=MEGA_BENCHMARK_MANIFEST_PATH,
+            models=[],
+            include_heuristic=True,
+            case_names={"latest_redwood_contract", "cinder-harbor_wifi_password", "atlas_owner"},
+            repeats=1,
+            quiet=True,
+        )
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(summaries), 1)
+        self.assertTrue(report_path.exists())
+
+    def test_handmade_benchmark_runner_executes_subset_without_llm(self) -> None:
+        _, results, summaries, report_path = run_benchmark(
+            manifest_path=HANDMADE_BENCHMARK_MANIFEST_PATH,
+            models=[],
+            include_heuristic=True,
+            case_names={"customer_alias_note", "archive_room_code", "guest_network_policy"},
+            repeats=1,
+            quiet=True,
+        )
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(summaries), 1)
+        self.assertTrue(report_path.exists())
 
 
 if __name__ == "__main__":

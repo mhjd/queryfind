@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from queryfind.config import ALLOWED_COMMANDS, REQUIRED_COMMANDS
+from queryfind.config import ALLOWED_COMMANDS, REQUIRED_COMMANDS, TRUSTED_COMMAND_DIRS
 from queryfind.logging_utils import RunLogger
 from queryfind.models import AgentAction, AgentObservation, SearchCandidate, SearchIntent
 
@@ -19,22 +19,30 @@ class DependencyReport:
     optional_missing: list[str]
 
 
+SAFE_ENV_KEYS = ("HOME", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE")
+
+
 class SearchBackend:
     def __init__(self, *, root: Path, logger: RunLogger, max_candidates: int) -> None:
-        self.root = root
+        self.root = root.resolve()
         self.logger = logger
         self.max_candidates = max_candidates
         self._recent_warnings: list[str] = []
+        self._trusted_search_path = os.pathsep.join(TRUSTED_COMMAND_DIRS)
+        self._command_paths = {
+            name: self._resolve_command_path(name)
+            for name in ALLOWED_COMMANDS
+        }
 
     def dependency_report(self) -> DependencyReport:
-        required_missing = [name for name in REQUIRED_COMMANDS if shutil.which(name) is None]
+        required_missing = [name for name in REQUIRED_COMMANDS if self._command_paths.get(name) is None]
         optional_missing = [
-            name for name in ALLOWED_COMMANDS if name not in REQUIRED_COMMANDS and shutil.which(name) is None
+            name for name in ALLOWED_COMMANDS if name not in REQUIRED_COMMANDS and self._command_paths.get(name) is None
         ]
         return DependencyReport(required_missing=required_missing, optional_missing=optional_missing)
 
     def inspect_root(self) -> str:
-        if shutil.which("tree"):
+        if self._command_paths.get("tree") is not None:
             result = self._try_run(
                 ["tree", "-a", "-L", "2", "--noreport", "-I", ".git", str(self.root)],
                 allowed_returncodes={0},
@@ -72,7 +80,7 @@ class SearchBackend:
             self.logger.warn("No candidates found with extension filter; retrying without extensions")
             self._search_paths(fallback_intent, by_path)
             self._search_contents(fallback_intent, by_path)
-        candidates = list(by_path.values())
+        candidates = [candidate for candidate in by_path.values() if self._is_within_root(candidate.path)]
         self._enrich_metadata(candidates[: self.max_candidates])
         self._sort_candidates(candidates, intent.sort_hint)
         return candidates[: self.max_candidates]
@@ -133,7 +141,7 @@ class SearchBackend:
         )
 
     def finalize_candidates(self, by_path: dict[Path, SearchCandidate], *, sort_hint: str) -> list[SearchCandidate]:
-        candidates = list(by_path.values())
+        candidates = [candidate for candidate in by_path.values() if self._is_within_root(candidate.path)]
         self._enrich_metadata(candidates[: self.max_candidates])
         self._sort_candidates(candidates, sort_hint)
         return candidates[: self.max_candidates]
@@ -141,6 +149,9 @@ class SearchBackend:
     def _search_paths(self, intent: SearchIntent, by_path: dict[Path, SearchCandidate]) -> None:
         terms = _dedupe(intent.filename_hints + intent.path_terms)
         for term in terms[:6]:
+            safe_term = self._validated_search_term(term, context="path search")
+            if safe_term is None:
+                continue
             argv = [
                 "fd",
                 "-0",
@@ -148,33 +159,35 @@ class SearchBackend:
                 "-t",
                 "f",
                 "--hidden",
-                "--follow",
                 "--exclude",
                 ".git",
             ]
             for extension in intent.extensions[:4]:
                 argv.extend(["-e", extension])
-            argv.extend([term, str(self.root)])
-            result = self._try_run(argv, allowed_returncodes={0}, context=f"path search for '{term}'")
+            argv.extend(["--", safe_term, str(self.root)])
+            result = self._try_run(argv, allowed_returncodes={0}, context=f"path search for '{safe_term}'")
             if result is None:
                 continue
             for raw_path in [item for item in result.stdout.split("\0") if item]:
                 path = Path(raw_path).resolve()
-                if not path.is_file():
+                if not path.is_file() or not self._is_within_root(path):
                     continue
                 candidate = by_path.setdefault(path, SearchCandidate(path=path))
-                weight = 8.0 if term in path.name.lower() else 4.0
+                weight = 8.0 if safe_term in path.name.lower() else 4.0
                 candidate.score += weight
-                _append_unique(candidate.reasons, f"path matches '{term}'")
+                _append_unique(candidate.reasons, f"path matches '{safe_term}'")
 
     def _search_contents(self, intent: SearchIntent, by_path: dict[Path, SearchCandidate]) -> None:
         terms = _dedupe(intent.content_terms or intent.path_terms)
         for term in terms[:6]:
-            argv = ["rg", "--json", "-n", "-i", "--hidden", "--glob", "!.git", "-m", "2"]
+            safe_term = self._validated_search_term(term, context="content search")
+            if safe_term is None:
+                continue
+            argv = ["rg", "--no-config", "--json", "-n", "-i", "--hidden", "--glob", "!.git", "-m", "2"]
             for extension in intent.extensions[:4]:
                 argv.extend(["-g", f"*.{extension}"])
-            argv.extend([term, str(self.root)])
-            result = self._try_run(argv, allowed_returncodes={0, 1}, context=f"content search for '{term}'")
+            argv.extend(["--", safe_term, str(self.root)])
+            result = self._try_run(argv, allowed_returncodes={0, 1}, context=f"content search for '{safe_term}'")
             if result is None:
                 continue
             if not result.stdout.strip():
@@ -188,11 +201,11 @@ class SearchBackend:
                 if not raw_path:
                     continue
                 path = Path(raw_path).resolve()
-                if not path.is_file():
+                if not path.is_file() or not self._is_within_root(path):
                     continue
                 candidate = by_path.setdefault(path, SearchCandidate(path=path))
                 candidate.score += 12.0
-                _append_unique(candidate.reasons, f"content matches '{term}'")
+                _append_unique(candidate.reasons, f"content matches '{safe_term}'")
                 line_number = int(data.get("line_number") or 0)
                 text = (((data.get("lines") or {}).get("text")) or "").strip()
                 if text:
@@ -203,7 +216,7 @@ class SearchBackend:
 
     def _enrich_metadata(self, candidates: list[SearchCandidate]) -> None:
         for candidate in candidates:
-            if shutil.which("stat"):
+            if self._command_paths.get("stat") is not None:
                 result = self._try_run(
                     ["stat", "-f", "%m|%z|%N", str(candidate.path)],
                     allowed_returncodes={0},
@@ -214,7 +227,7 @@ class SearchBackend:
                     if len(parts) >= 2:
                         candidate.mtime_epoch = int(parts[0])
                         candidate.size_bytes = int(parts[1])
-            if shutil.which("mdls"):
+            if self._command_paths.get("mdls") is not None:
                 result = self._try_run(
                     ["mdls", "-raw", "-name", "kMDItemKind", str(candidate.path)],
                     allowed_returncodes={0, 1},
@@ -246,16 +259,22 @@ class SearchBackend:
         )
 
     def _run(self, argv: list[str], *, allowed_returncodes: set[int]) -> subprocess.CompletedProcess[str]:
-        executable = Path(argv[0]).name
+        if not argv:
+            raise ValueError("Command not allowed: <empty>")
+        executable = argv[0]
         if executable not in ALLOWED_COMMANDS:
             raise ValueError(f"Command not allowed: {executable}")
+        self._validate_argv(argv)
+        command_path = self._command_paths.get(executable)
+        if command_path is None:
+            raise RuntimeError(f"Command not available in trusted macOS paths: {executable}")
         self.logger.command(argv)
         result = subprocess.run(
-            argv,
+            [str(command_path), *argv[1:]],
             cwd=self.root,
             capture_output=True,
             text=True,
-            env={**os.environ, "NO_COLOR": "1"},
+            env=self._command_env(),
             check=False,
         )
         if result.returncode not in allowed_returncodes:
@@ -283,6 +302,92 @@ class SearchBackend:
             return str(path.relative_to(self.root))
         except ValueError:
             return str(path)
+
+    def _resolve_command_path(self, executable: str) -> Path | None:
+        path = shutil.which(executable, path=self._trusted_search_path)
+        return Path(path).resolve() if path else None
+
+    def _command_env(self) -> dict[str, str]:
+        env = {"NO_COLOR": "1", "PATH": self._trusted_search_path}
+        for key in SAFE_ENV_KEYS:
+            value = os.environ.get(key)
+            if value:
+                env[key] = value
+        return env
+
+    def _validate_argv(self, argv: list[str]) -> None:
+        executable = argv[0]
+        if executable == "fd":
+            self._validate_fd_argv(argv)
+            return
+        if executable == "rg":
+            self._validate_rg_argv(argv)
+            return
+        if executable == "ls":
+            if argv != ["ls", "-la", str(self.root)]:
+                raise ValueError("Invalid ls invocation")
+            return
+        if executable == "tree":
+            if argv != ["tree", "-a", "-L", "2", "--noreport", "-I", ".git", str(self.root)]:
+                raise ValueError("Invalid tree invocation")
+            return
+        if executable == "stat":
+            if len(argv) != 4 or argv[:3] != ["stat", "-f", "%m|%z|%N"] or not self._is_within_root(Path(argv[3])):
+                raise ValueError("Invalid stat invocation")
+            return
+        if executable == "mdls":
+            if (
+                len(argv) != 5
+                or argv[:4] != ["mdls", "-raw", "-name", "kMDItemKind"]
+                or not self._is_within_root(Path(argv[4]))
+            ):
+                raise ValueError("Invalid mdls invocation")
+            return
+        raise ValueError(f"Command not allowed: {executable}")
+
+    def _validate_fd_argv(self, argv: list[str]) -> None:
+        prefix = ["fd", "-0", "-i", "-t", "f", "--hidden", "--exclude", ".git"]
+        if argv[: len(prefix)] != prefix:
+            raise ValueError("Invalid fd invocation")
+        index = len(prefix)
+        while index + 1 < len(argv) and argv[index] == "-e":
+            extension = argv[index + 1]
+            if not extension or extension.startswith("-"):
+                raise ValueError("Invalid fd extension filter")
+            index += 2
+        if len(argv) != index + 3 or argv[index] != "--" or argv[index + 2] != str(self.root):
+            raise ValueError("Invalid fd search arguments")
+
+    def _validate_rg_argv(self, argv: list[str]) -> None:
+        prefix = ["rg", "--no-config", "--json", "-n", "-i", "--hidden", "--glob", "!.git", "-m", "2"]
+        if argv[: len(prefix)] != prefix:
+            raise ValueError("Invalid rg invocation")
+        index = len(prefix)
+        while index + 1 < len(argv) and argv[index] == "-g":
+            glob = argv[index + 1]
+            if not glob or glob.startswith("-"):
+                raise ValueError("Invalid rg glob filter")
+            index += 2
+        if len(argv) != index + 3 or argv[index] != "--" or argv[index + 2] != str(self.root):
+            raise ValueError("Invalid rg search arguments")
+
+    def _validated_search_term(self, term: str, *, context: str) -> str | None:
+        cleaned = term.strip()
+        if not cleaned:
+            return None
+        if cleaned.startswith("-") or any(char in cleaned for char in ("\0", "\n", "\r")):
+            message = f"{context} skipped suspicious term: {cleaned!r}"
+            self._recent_warnings.append(message)
+            self.logger.warn(message)
+            return None
+        return cleaned
+
+    def _is_within_root(self, path: Path) -> bool:
+        try:
+            path.resolve().relative_to(self.root)
+            return True
+        except ValueError:
+            return False
 
 
 def format_candidate_metadata(candidate: SearchCandidate) -> str:

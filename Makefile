@@ -3,7 +3,7 @@ VENV ?= .venv
 PIP := $(VENV)/bin/pip
 RUN := $(VENV)/bin/python
 
-.PHONY: help venv doctor search synthetic-eval benchmark benchmark-model test
+.PHONY: help venv doctor search synthetic-eval benchmark benchmark-model benchmark-extended benchmark-model-extended benchmark-mega benchmark-model-mega benchmark-handmade100 benchmark-model-handmade100 test
 
 help: ## Show available project commands
 	@grep -E '^[a-zA-Z_-]+:.*## ' Makefile | sed 's/:.*## / - /'
@@ -11,7 +11,7 @@ help: ## Show available project commands
 venv: ## Create a virtualenv and install the package
 	$(PYTHON) -m venv $(VENV)
 	$(PIP) install --upgrade pip
-	$(PIP) install -e .
+	$(PIP) install -e ".[dev]"
 
 doctor: ## Check required local tools and Ollama availability
 	$(RUN) -m queryfind --doctor
@@ -28,5 +28,23 @@ benchmark: ## Run the full benchmark in heuristic baseline mode through the agen
 benchmark-model: ## Run the full benchmark against the default model through the agent loop
 	$(RUN) -m queryfind.benchmark --model qwen3.5:27b
 
+benchmark-extended: ## Run the 40-case extended benchmark in heuristic baseline mode
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/extended_manifest.json --heuristic-baseline
+
+benchmark-model-extended: ## Run the 40-case extended benchmark against the default model
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/extended_manifest.json --model qwen3.5:27b
+
+benchmark-mega: ## Run the 100-case mega benchmark in heuristic baseline mode
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/mega_manifest.json --heuristic-baseline
+
+benchmark-model-mega: ## Run the 100-case mega benchmark against the default model
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/mega_manifest.json --model qwen3.5:27b
+
+benchmark-handmade100: ## Run the handcrafted 100-case benchmark in heuristic baseline mode
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/handmade100_manifest.json --heuristic-baseline
+
+benchmark-model-handmade100: ## Run the handcrafted 100-case benchmark against the default model
+	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/handmade100_manifest.json --model qwen3.5:27b
+
 test: ## Run the unit and CLI smoke tests
-	$(RUN) -m unittest discover -s tests -v
+	$(RUN) -m pytest -q

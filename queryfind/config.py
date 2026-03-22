@@ -6,6 +6,14 @@ DEFAULT_MODEL = "qwen3.5:27b"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 ALLOWED_COMMANDS = ("fd", "rg", "ls", "tree", "stat", "mdls")
 REQUIRED_COMMANDS = ("fd", "rg")
+TRUSTED_COMMAND_DIRS = (
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+    "/usr/sbin",
+    "/sbin",
+)
 
 
 @dataclass(slots=True)

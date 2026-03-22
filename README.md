@@ -13,7 +13,7 @@ QueryFind uses a local Ollama model plus a read-only command allowlist (`fd`, `r
 
 Requirements:
 - macOS
-- Python 3.11+
+- Python 3.12+
 - `fd`
 - `rg`
 - `tree` recommended
@@ -26,7 +26,7 @@ Typical setup with Homebrew:
 brew install fd ripgrep tree ollama
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -e ".[dev]"
 ollama pull qwen3-coder:30b
 ```
 
@@ -34,6 +34,7 @@ Check the environment:
 
 ```bash
 python -m queryfind --doctor
+make test
 ```
 
 ## Use
@@ -62,11 +63,13 @@ Useful commands:
 make doctor
 make synthetic-eval
 python -m queryfind.benchmark --model qwen3-coder:30b
+python -m queryfind.benchmark --manifest benchmark_fs/extended_manifest.json --model qwen3-coder:30b
+python -m queryfind.benchmark --manifest benchmark_fs/handmade100_manifest.json --model qwen3-coder:30b
 ```
 
 ## Notes
 
 - QueryFind auto-starts Ollama when possible.
-- LLM mode is local-only and read-only.
+- LLM mode is local-only and read-only, and backend command execution is constrained to trusted macOS binaries plus validated read-only argv shapes.
 - Heuristic mode is available explicitly with `--no-llm`.
 - Logs are written under `.queryfind/`.

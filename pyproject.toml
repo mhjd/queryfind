@@ -12,6 +12,11 @@ dependencies = [
   "rich==13.9.4",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest==9.0.2",
+]
+
 [project.scripts]
 queryfind = "queryfind.cli:main"
 
