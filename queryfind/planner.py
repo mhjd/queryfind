@@ -282,36 +282,28 @@ def next_agent_action(
             source="backend",
         )
 
-    overview_section = _root_overview_snapshot(root_overview) if not steps else "-"
-    trace_section = _trace_snapshot(steps, limit=3)
-    candidate_section = _candidate_snapshot(candidates, limit=3)
+    if config.model.startswith("gpt-oss"):
+        overview_section = _root_overview_snapshot(root_overview, limit=160) if not steps else "-"
+        trace_section = _trace_snapshot(steps, limit=2)
+        candidate_section = _candidate_snapshot(candidates, limit=2)
+    else:
+        overview_section = _root_overview_snapshot(root_overview) if not steps else "-"
+        trace_section = _trace_snapshot(steps, limit=3)
+        candidate_section = _candidate_snapshot(candidates, limit=3)
 
     messages = [
         {
             "role": "system",
-            "content": (
-                "Drive a local file search agent. "
-                "No shell commands. "
-                "Return JSON only: "
-                "{\"action\":\"search_paths|search_contents|finish\",\"terms\":[...],"
-                "\"extensions\":[...],\"reasoning\":\"...\",\"final_summary\":\"...\"}. "
-                "Prefer 1-2 short terms. "
-                "Use search_paths for concise file-name or path clues. "
-                "Use search_contents when the answer is more likely to appear inside document text than in a file name. "
-                "Break the request into entity names and key concept terms; do not copy the whole request as one long search phrase. "
-                "Avoid generic framing words and long relational phrases as terms. "
-                "If a step finds no candidates, switch between path search and content search or shorten the terms; do not repeat the same failed query. "
-                "Use finish when evidence is enough or likely absent."
-            ),
+            "content": _agent_system_prompt(config.model),
         },
         {
             "role": "user",
-            "content": (
-                f"q={query}\n"
-                f"root={overview_section}\n"
-                f"trace={trace_section}\n"
-                f"top={candidate_section}\n"
-                "tools=fd,rg,ls,tree,stat,mdls"
+            "content": _agent_user_prompt(
+                model=config.model,
+                query=query,
+                overview_section=overview_section,
+                trace_section=trace_section,
+                candidate_section=candidate_section,
             ),
         },
     ]
@@ -409,6 +401,7 @@ def _stream_completion(
     thinking_seen = False
     content_seen = False
     content_parts: list[str] = []
+    thinking_parts: list[str] = []
     chunk_count = 0
     char_count = 0
     first_chunk_ms: float | None = None
@@ -427,6 +420,8 @@ def _stream_completion(
             if config.show_thinking and chunk.thinking:
                 thinking_seen = True
                 logger.write_stream(chunk.thinking)
+            if chunk.thinking:
+                thinking_parts.append(chunk.thinking)
             if chunk.content:
                 if config.show_thinking and thinking_seen and not content_seen:
                     logger.write_stream("\n\nFinal response:\n")
@@ -441,13 +436,51 @@ def _stream_completion(
         if content_parts:
             logger.warn(f"{label} ended before completion; attempting to use partial streamed output: {exc}")
             return "".join(content_parts).strip()
+        if thinking_parts:
+            logger.warn(f"{label} ended before completion; attempting to use partial thinking output: {exc}")
+            return "".join(thinking_parts).strip()
         raise
     finally:
         if config.show_thinking:
             logger.end_stream()
     if not config.show_thinking:
         logger.info(_stream_diagnostic_summary(first_chunk_ms, chunk_count, char_count, completed=True))
-    return "".join(content_parts).strip()
+    if content_parts:
+        return "".join(content_parts).strip()
+    if thinking_parts:
+        logger.info(f"{label} produced no content payload; using thinking text as parse fallback")
+        return "".join(thinking_parts).strip()
+    return ""
+
+
+def _agent_system_prompt(model: str) -> str:
+    if model.startswith("gpt-oss"):
+        return (
+            "Choose the next action for a local file search state machine. "
+            "Valid actions are search_paths, search_contents, or finish. "
+            "Do not output shell commands, tool calls, explanations, or code fences. "
+            "Reply with exactly one compact JSON object and nothing else: "
+            "{\"action\":\"search_paths|search_contents|finish\",\"terms\":[...],"
+            "\"extensions\":[...],\"reasoning\":\"...\",\"final_summary\":\"...\"}. "
+            "Choose one next action only. "
+            "Prefer 1-2 short terms. "
+            "Use simple noun terms, not full sentences. "
+            "Use finish when evidence is enough or likely absent."
+        )
+    return (
+        "Drive a local file search agent. "
+        "No shell commands. "
+        "Return JSON only: "
+        "{\"action\":\"search_paths|search_contents|finish\",\"terms\":[...],"
+        "\"extensions\":[...],\"reasoning\":\"...\",\"final_summary\":\"...\"}. "
+        "Prefer 1-2 short terms. "
+        "Use search_paths for concise file-name or path clues. "
+        "Use search_contents when the answer is more likely to appear inside document text than in a file name. "
+        "Break the request into entity names and key concept terms; do not copy the whole request as one long search phrase. "
+        "Avoid generic framing words and long relational phrases as terms. "
+        "If a step finds no candidates, switch between path search and content search or shorten the terms; do not repeat the same failed query. "
+        "Use finish when evidence is enough or likely absent."
+    )
 
 
 def _extract_json_object(text: str) -> dict | None:
@@ -530,6 +563,31 @@ def _root_overview_snapshot(root_overview: str, *, limit: int = 400) -> str:
     if len(compact) <= limit:
         return compact
     return compact[:limit].rstrip() + "..."
+
+
+def _agent_user_prompt(
+    *,
+    model: str,
+    query: str,
+    overview_section: str,
+    trace_section: str,
+    candidate_section: str,
+) -> str:
+    if model.startswith("gpt-oss"):
+        return (
+            f"query={query}\n"
+            f"root_hint={overview_section}\n"
+            f"recent_steps={trace_section}\n"
+            f"candidate_paths={candidate_section}\n"
+            "available_actions=search_paths,search_contents,finish"
+        )
+    return (
+        f"q={query}\n"
+        f"root={overview_section}\n"
+        f"trace={trace_section}\n"
+        f"top={candidate_section}\n"
+        "tools=fd,rg,ls,tree,stat,mdls"
+    )
 
 
 def _stream_diagnostic_summary(

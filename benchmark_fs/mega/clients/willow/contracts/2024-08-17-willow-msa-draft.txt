@@ -1,0 +1,4 @@
+Client: Willow Foods
+            Document: Master Services Agreement
+            Status: draft
+            Scope: legacy draft for temperature exception triage.

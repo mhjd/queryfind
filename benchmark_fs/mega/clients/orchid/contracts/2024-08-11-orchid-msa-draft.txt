@@ -1,0 +1,4 @@
+Client: Orchid Labs
+            Document: Master Services Agreement
+            Status: draft
+            Scope: legacy draft for laboratory cold-chain onboarding.

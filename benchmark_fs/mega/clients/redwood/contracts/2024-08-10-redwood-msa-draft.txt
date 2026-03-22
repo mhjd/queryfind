@@ -1,0 +1,4 @@
+Client: Redwood Industrial
+            Document: Master Services Agreement
+            Status: draft
+            Scope: legacy draft for dock labeling modernization.

@@ -1,0 +1,5 @@
+Client: Ember Freight
+            Document: Master Services Agreement
+            Status: signed
+            Signed date: 2025-03-05
+            Scope: cross-dock intake cleanup

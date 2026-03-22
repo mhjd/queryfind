@@ -1,0 +1,5 @@
+Client: Orchid Labs
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-01-28
+            Control note: rotates shared access tokens every 30 days.

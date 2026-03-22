@@ -1,0 +1,2 @@
+Beacon program = Atlas
+        Cold aisle program = Frostline

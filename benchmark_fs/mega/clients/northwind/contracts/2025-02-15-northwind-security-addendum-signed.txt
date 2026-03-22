@@ -1,0 +1,5 @@
+Client: Northwind Foods
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-02-15
+            Control note: exports access logs to the customer vault weekly.

@@ -3,7 +3,7 @@ VENV ?= .venv
 PIP := $(VENV)/bin/pip
 RUN := $(VENV)/bin/python
 
-.PHONY: help venv doctor search synthetic-eval benchmark benchmark-model benchmark-extended benchmark-model-extended benchmark-mega benchmark-model-mega benchmark-handmade100 benchmark-model-handmade100 test
+.PHONY: help venv doctor search synthetic-eval benchmark benchmark-model benchmark-extended benchmark-model-extended benchmark-mega benchmark-model-mega benchmark-handmade100 benchmark-model-handmade100 benchmark-personal-models test
 
 help: ## Show available project commands
 	@grep -E '^[a-zA-Z_-]+:.*## ' Makefile | sed 's/:.*## / - /'
@@ -45,6 +45,9 @@ benchmark-handmade100: ## Run the handcrafted 100-case benchmark in heuristic ba
 
 benchmark-model-handmade100: ## Run the handcrafted 100-case benchmark against the default model
 	$(RUN) -m queryfind.benchmark --manifest benchmark_fs/handmade100_manifest.json --model qwen3.5:27b
+
+benchmark-personal-models: ## Run qwen3.5, glm, and qwen3-coder on the handmade personal-only slice
+	/bin/zsh scripts/run_personal_model_benchmarks.sh
 
 test: ## Run the unit and CLI smoke tests
 	$(RUN) -m pytest -q

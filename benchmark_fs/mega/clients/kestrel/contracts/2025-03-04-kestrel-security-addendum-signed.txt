@@ -1,0 +1,5 @@
+Client: Kestrel Retail
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-03-04
+            Control note: disables inactive vendor accounts after 14 days.

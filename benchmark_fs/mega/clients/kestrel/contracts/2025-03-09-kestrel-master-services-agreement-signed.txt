@@ -1,0 +1,5 @@
+Client: Kestrel Retail
+            Document: Master Services Agreement
+            Status: signed
+            Signed date: 2025-03-09
+            Scope: returns consolidation program

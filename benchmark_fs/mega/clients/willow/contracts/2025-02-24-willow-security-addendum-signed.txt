@@ -1,0 +1,5 @@
+Client: Willow Foods
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-02-24
+            Control note: keeps freezer alarm history for 400 days.

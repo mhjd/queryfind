@@ -1,0 +1,4 @@
+Client: Kestrel Retail
+            Document: Master Services Agreement
+            Status: draft
+            Scope: legacy draft for returns consolidation program.

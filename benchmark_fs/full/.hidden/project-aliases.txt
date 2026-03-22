@@ -1,0 +1,3 @@
+Beacon = Atlas
+Nightlight = Lantern
+Icewire = Frostline

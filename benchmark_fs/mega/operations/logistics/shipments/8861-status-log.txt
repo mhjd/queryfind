@@ -1,0 +1,3 @@
+Shipment: 8861
+            Current status: waiting on corrected supplier manifest
+            Last note: escalation remains open.

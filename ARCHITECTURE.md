@@ -53,6 +53,7 @@
 - `benchmark_fs/handmade100/` plus `benchmark_fs/handmade100_manifest.json` provide a handcrafted 125-case suite with realistic aliases, indirect clues, multi-file hops, and deliberately messy company plus personal subtrees.
 - `benchmark_fs/generate_large_benchmark.py` rebuilds the generated mega suite.
 - `benchmark_fs/build_handmade100.py` rebuilds the handcrafted suite from curated scenario data.
+- `scripts/run_personal_model_benchmarks.sh` runs the handmade personal-only slice sequentially for `qwen3.5:27b`, `glm-4.7-flash:latest`, and `qwen3-coder:30b`.
 - `queryfind.benchmark` runs the real agent/search/ranker pipeline, measures correctness and latency, records step counts and actual LLM turn usage, supports case/category/difficulty filtering, accepts a `--manifest` selector, and writes a JSON report.
 
 ## Safety Model

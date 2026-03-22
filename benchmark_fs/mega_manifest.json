@@ -1,0 +1,1756 @@
+{
+  "suite_name": "queryfind_mega_v1",
+  "description": "A 100-case large local benchmark for model comparison across path search, content retrieval, disambiguation, aliases, and no-answer behavior.",
+  "corpus_root": "mega",
+  "mtimes": {
+    ".hidden/project-aliases.txt": "2025-08-22T09:00:00+00:00",
+    ".hidden/site-aliases.txt": "2025-08-21T09:00:00+00:00",
+    "README.md": "2025-01-01T09:00:00+00:00",
+    "clients/blueharbor/contracts/2024-08-16-blueharbor-msa-draft.txt": "2025-01-19T09:00:00+00:00",
+    "clients/blueharbor/contracts/2025-03-10-blueharbor-security-addendum-signed.txt": "2025-03-10T11:00:00+00:00",
+    "clients/blueharbor/contracts/2025-03-12-blueharbor-master-services-agreement-signed.txt": "2025-03-12T14:00:00+00:00",
+    "clients/blueharbor/notes/account-brief.md": "2025-01-20T09:00:00+00:00",
+    "clients/ember/contracts/2024-08-12-ember-msa-draft.txt": "2025-01-07T09:00:00+00:00",
+    "clients/ember/contracts/2025-03-01-ember-security-addendum-signed.txt": "2025-03-01T11:00:00+00:00",
+    "clients/ember/contracts/2025-03-05-ember-master-services-agreement-signed.txt": "2025-03-05T14:00:00+00:00",
+    "clients/ember/notes/account-brief.md": "2025-01-08T09:00:00+00:00",
+    "clients/kestrel/contracts/2024-08-14-kestrel-msa-draft.txt": "2025-01-13T09:00:00+00:00",
+    "clients/kestrel/contracts/2025-03-04-kestrel-security-addendum-signed.txt": "2025-03-04T11:00:00+00:00",
+    "clients/kestrel/contracts/2025-03-09-kestrel-master-services-agreement-signed.txt": "2025-03-09T14:00:00+00:00",
+    "clients/kestrel/notes/account-brief.md": "2025-01-14T09:00:00+00:00",
+    "clients/northwind/contracts/2024-08-13-northwind-msa-draft.txt": "2025-01-10T09:00:00+00:00",
+    "clients/northwind/contracts/2025-02-15-northwind-security-addendum-signed.txt": "2025-02-15T11:00:00+00:00",
+    "clients/northwind/contracts/2025-02-19-northwind-master-services-agreement-signed.txt": "2025-02-19T14:00:00+00:00",
+    "clients/northwind/notes/account-brief.md": "2025-01-11T09:00:00+00:00",
+    "clients/orchid/contracts/2024-08-11-orchid-msa-draft.txt": "2025-01-04T09:00:00+00:00",
+    "clients/orchid/contracts/2025-01-28-orchid-security-addendum-signed.txt": "2025-01-28T11:00:00+00:00",
+    "clients/orchid/contracts/2025-02-01-orchid-master-services-agreement-signed.txt": "2025-02-01T14:00:00+00:00",
+    "clients/orchid/notes/account-brief.md": "2025-01-05T09:00:00+00:00",
+    "clients/redwood/contracts/2024-08-10-redwood-msa-draft.txt": "2025-01-01T09:00:00+00:00",
+    "clients/redwood/contracts/2025-03-07-redwood-security-addendum-signed.txt": "2025-03-07T11:00:00+00:00",
+    "clients/redwood/contracts/2025-03-11-redwood-master-services-agreement-signed.txt": "2025-03-11T14:00:00+00:00",
+    "clients/redwood/notes/account-brief.md": "2025-01-02T09:00:00+00:00",
+    "clients/sablecrest/contracts/2024-08-15-sablecrest-msa-draft.txt": "2025-01-16T09:00:00+00:00",
+    "clients/sablecrest/contracts/2025-02-22-sablecrest-security-addendum-signed.txt": "2025-02-22T11:00:00+00:00",
+    "clients/sablecrest/contracts/2025-02-25-sablecrest-master-services-agreement-signed.txt": "2025-02-25T14:00:00+00:00",
+    "clients/sablecrest/notes/account-brief.md": "2025-01-17T09:00:00+00:00",
+    "clients/willow/contracts/2024-08-17-willow-msa-draft.txt": "2025-01-22T09:00:00+00:00",
+    "clients/willow/contracts/2025-02-24-willow-security-addendum-signed.txt": "2025-02-24T11:00:00+00:00",
+    "clients/willow/contracts/2025-02-27-willow-master-services-agreement-signed.txt": "2025-02-27T14:00:00+00:00",
+    "clients/willow/notes/account-brief.md": "2025-01-23T09:00:00+00:00",
+    "finance/vendors/bluepeak/invoices/2025-02-invoice.txt": "2025-06-12T10:00:00+00:00",
+    "finance/vendors/bluepeak/profile.md": "2025-06-12T09:00:00+00:00",
+    "finance/vendors/coldtrail/invoices/2025-02-invoice.txt": "2025-06-15T10:00:00+00:00",
+    "finance/vendors/coldtrail/profile.md": "2025-06-15T09:00:00+00:00",
+    "finance/vendors/ironline/invoices/2025-02-invoice.txt": "2025-06-13T10:00:00+00:00",
+    "finance/vendors/ironline/profile.md": "2025-06-13T09:00:00+00:00",
+    "finance/vendors/meridian/invoices/2025-02-invoice.txt": "2025-06-10T10:00:00+00:00",
+    "finance/vendors/meridian/profile.md": "2025-06-10T09:00:00+00:00",
+    "finance/vendors/northcoast/invoices/2025-02-invoice.txt": "2025-06-11T10:00:00+00:00",
+    "finance/vendors/northcoast/profile.md": "2025-06-11T09:00:00+00:00",
+    "finance/vendors/summit/invoices/2025-02-invoice.txt": "2025-06-14T10:00:00+00:00",
+    "finance/vendors/summit/profile.md": "2025-06-14T09:00:00+00:00",
+    "hr/hiring/analytics-engineer-scorecard.md": "2025-07-11T09:00:00+00:00",
+    "hr/hiring/data-platform-analyst-scorecard.md": "2025-07-10T09:00:00+00:00",
+    "hr/hiring/fleet-analyst-scorecard.md": "2025-07-13T09:00:00+00:00",
+    "hr/hiring/inventory-planner-scorecard.md": "2025-07-17T09:00:00+00:00",
+    "hr/hiring/operations-program-manager-scorecard.md": "2025-07-15T09:00:00+00:00",
+    "hr/hiring/security-analyst-scorecard.md": "2025-07-16T09:00:00+00:00",
+    "hr/hiring/site-reliability-manager-scorecard.md": "2025-07-14T09:00:00+00:00",
+    "hr/hiring/warehouse-supervisor-scorecard.md": "2025-07-12T09:00:00+00:00",
+    "operations/logistics/incidents/shipment-7718-root-cause.md": "2025-03-12T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-7724-root-cause.md": "2025-03-13T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-7731-root-cause.md": "2025-03-14T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-8842-root-cause.md": "2025-03-15T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-8850-root-cause.md": "2025-03-16T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-8861-root-cause.md": "2025-03-17T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-8873-root-cause.md": "2025-03-18T10:00:00+00:00",
+    "operations/logistics/incidents/shipment-8890-root-cause.md": "2025-03-19T10:00:00+00:00",
+    "operations/logistics/shipments/7718-status-log.txt": "2025-03-12T09:00:00+00:00",
+    "operations/logistics/shipments/7724-status-log.txt": "2025-03-13T09:00:00+00:00",
+    "operations/logistics/shipments/7731-status-log.txt": "2025-03-14T09:00:00+00:00",
+    "operations/logistics/shipments/8842-status-log.txt": "2025-03-15T09:00:00+00:00",
+    "operations/logistics/shipments/8850-status-log.txt": "2025-03-16T09:00:00+00:00",
+    "operations/logistics/shipments/8861-status-log.txt": "2025-03-17T09:00:00+00:00",
+    "operations/logistics/shipments/8873-status-log.txt": "2025-03-18T09:00:00+00:00",
+    "operations/logistics/shipments/8890-status-log.txt": "2025-03-19T09:00:00+00:00",
+    "operations/sites/cinder-harbor/device-inventory.md": "2025-02-10T13:00:00+00:00",
+    "operations/sites/cinder-harbor/dock-3-scanner-maintenance.md": "2025-02-10T11:00:00+00:00",
+    "operations/sites/cinder-harbor/network-runbook.md": "2025-02-10T09:00:00+00:00",
+    "operations/sites/delta-yard/device-inventory.md": "2025-02-11T13:00:00+00:00",
+    "operations/sites/delta-yard/dock-3-scanner-maintenance.md": "2025-02-11T11:00:00+00:00",
+    "operations/sites/delta-yard/network-runbook.md": "2025-02-11T09:00:00+00:00",
+    "operations/sites/granite-wharf/device-inventory.md": "2025-02-16T13:00:00+00:00",
+    "operations/sites/granite-wharf/dock-3-scanner-maintenance.md": "2025-02-16T11:00:00+00:00",
+    "operations/sites/granite-wharf/network-runbook.md": "2025-02-16T09:00:00+00:00",
+    "operations/sites/marlin-port/device-inventory.md": "2025-02-12T13:00:00+00:00",
+    "operations/sites/marlin-port/dock-3-scanner-maintenance.md": "2025-02-12T11:00:00+00:00",
+    "operations/sites/marlin-port/network-runbook.md": "2025-02-12T09:00:00+00:00",
+    "operations/sites/north-quay/device-inventory.md": "2025-02-13T13:00:00+00:00",
+    "operations/sites/north-quay/dock-3-scanner-maintenance.md": "2025-02-13T11:00:00+00:00",
+    "operations/sites/north-quay/network-runbook.md": "2025-02-13T09:00:00+00:00",
+    "operations/sites/orchard-dock/device-inventory.md": "2025-02-17T13:00:00+00:00",
+    "operations/sites/orchard-dock/dock-3-scanner-maintenance.md": "2025-02-17T11:00:00+00:00",
+    "operations/sites/orchard-dock/network-runbook.md": "2025-02-17T09:00:00+00:00",
+    "operations/sites/raven-terminal/device-inventory.md": "2025-02-14T13:00:00+00:00",
+    "operations/sites/raven-terminal/dock-3-scanner-maintenance.md": "2025-02-14T11:00:00+00:00",
+    "operations/sites/raven-terminal/network-runbook.md": "2025-02-14T09:00:00+00:00",
+    "operations/sites/sunset-depot/device-inventory.md": "2025-02-15T13:00:00+00:00",
+    "operations/sites/sunset-depot/dock-3-scanner-maintenance.md": "2025-02-15T11:00:00+00:00",
+    "operations/sites/sunset-depot/network-runbook.md": "2025-02-15T09:00:00+00:00",
+    "people/oncall-rotations.md": "2025-08-20T09:00:00+00:00",
+    "people/team-directory.md": "2025-08-19T09:00:00+00:00",
+    "projects/atlas/notes/rollback-plan.md": "2025-04-21T15:00:00+00:00",
+    "projects/atlas/project-brief.md": "2025-04-21T09:00:00+00:00",
+    "projects/atlas/status/2025-03-07-weekly-update.md": "2025-04-21T09:00:00+00:00",
+    "projects/atlas/status/2025-03-14-weekly-update.md": "2025-04-22T09:00:00+00:00",
+    "projects/embergrid/notes/rollback-plan.md": "2025-04-27T15:00:00+00:00",
+    "projects/embergrid/project-brief.md": "2025-04-27T09:00:00+00:00",
+    "projects/embergrid/status/2025-03-01-weekly-update.md": "2025-04-27T09:00:00+00:00",
+    "projects/embergrid/status/2025-03-08-weekly-update.md": "2025-04-28T09:00:00+00:00",
+    "projects/frostline/notes/rollback-plan.md": "2025-04-23T15:00:00+00:00",
+    "projects/frostline/project-brief.md": "2025-04-23T09:00:00+00:00",
+    "projects/frostline/status/2025-03-05-weekly-update.md": "2025-04-23T09:00:00+00:00",
+    "projects/frostline/status/2025-03-12-weekly-update.md": "2025-04-24T09:00:00+00:00",
+    "projects/keel/notes/rollback-plan.md": "2025-04-25T15:00:00+00:00",
+    "projects/keel/project-brief.md": "2025-04-25T09:00:00+00:00",
+    "projects/keel/status/2025-03-03-weekly-update.md": "2025-04-25T09:00:00+00:00",
+    "projects/keel/status/2025-03-10-weekly-update.md": "2025-04-26T09:00:00+00:00",
+    "projects/lantern/notes/rollback-plan.md": "2025-04-22T15:00:00+00:00",
+    "projects/lantern/project-brief.md": "2025-04-22T09:00:00+00:00",
+    "projects/lantern/status/2025-03-06-weekly-update.md": "2025-04-22T09:00:00+00:00",
+    "projects/lantern/status/2025-03-13-weekly-update.md": "2025-04-23T09:00:00+00:00",
+    "projects/northstar/notes/rollback-plan.md": "2025-04-24T15:00:00+00:00",
+    "projects/northstar/project-brief.md": "2025-04-24T09:00:00+00:00",
+    "projects/northstar/status/2025-03-04-weekly-update.md": "2025-04-24T09:00:00+00:00",
+    "projects/northstar/status/2025-03-11-weekly-update.md": "2025-04-25T09:00:00+00:00",
+    "projects/quartz/notes/rollback-plan.md": "2025-04-28T15:00:00+00:00",
+    "projects/quartz/project-brief.md": "2025-04-28T09:00:00+00:00",
+    "projects/quartz/status/2025-03-08-weekly-update.md": "2025-04-28T09:00:00+00:00",
+    "projects/quartz/status/2025-03-15-weekly-update.md": "2025-04-29T09:00:00+00:00",
+    "projects/tidewatch/notes/rollback-plan.md": "2025-04-26T15:00:00+00:00",
+    "projects/tidewatch/project-brief.md": "2025-04-26T09:00:00+00:00",
+    "projects/tidewatch/status/2025-03-02-weekly-update.md": "2025-04-26T09:00:00+00:00",
+    "projects/tidewatch/status/2025-03-09-weekly-update.md": "2025-04-27T09:00:00+00:00"
+  },
+  "cases": [
+    {
+      "name": "latest_redwood_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Redwood Industrial",
+      "expected_path": "clients/redwood/contracts/2025-03-11-redwood-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/redwood/contracts/2025-03-11-redwood-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "redwood_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Redwood Industrial",
+      "expected_path": "clients/redwood/contracts/2025-03-07-redwood-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/redwood/contracts/2025-03-07-redwood-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "retains 180 days of telemetry logs"
+    },
+    {
+      "name": "latest_orchid_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Orchid Labs",
+      "expected_path": "clients/orchid/contracts/2025-02-01-orchid-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/orchid/contracts/2025-02-01-orchid-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "orchid_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Orchid Labs",
+      "expected_path": "clients/orchid/contracts/2025-01-28-orchid-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/orchid/contracts/2025-01-28-orchid-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "rotates shared access tokens every 30 days"
+    },
+    {
+      "name": "latest_ember_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Ember Freight",
+      "expected_path": "clients/ember/contracts/2025-03-05-ember-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/ember/contracts/2025-03-05-ember-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "ember_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Ember Freight",
+      "expected_path": "clients/ember/contracts/2025-03-01-ember-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/ember/contracts/2025-03-01-ember-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "stores badge audit events for 365 days"
+    },
+    {
+      "name": "latest_northwind_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Northwind Foods",
+      "expected_path": "clients/northwind/contracts/2025-02-19-northwind-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/northwind/contracts/2025-02-19-northwind-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "northwind_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Northwind Foods",
+      "expected_path": "clients/northwind/contracts/2025-02-15-northwind-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/northwind/contracts/2025-02-15-northwind-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "exports access logs to the customer vault weekly"
+    },
+    {
+      "name": "latest_kestrel_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Kestrel Retail",
+      "expected_path": "clients/kestrel/contracts/2025-03-09-kestrel-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/kestrel/contracts/2025-03-09-kestrel-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "kestrel_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Kestrel Retail",
+      "expected_path": "clients/kestrel/contracts/2025-03-04-kestrel-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/kestrel/contracts/2025-03-04-kestrel-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "disables inactive vendor accounts after 14 days"
+    },
+    {
+      "name": "latest_sablecrest_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Sablecrest Health",
+      "expected_path": "clients/sablecrest/contracts/2025-02-25-sablecrest-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/sablecrest/contracts/2025-02-25-sablecrest-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "sablecrest_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Sablecrest Health",
+      "expected_path": "clients/sablecrest/contracts/2025-02-22-sablecrest-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/sablecrest/contracts/2025-02-22-sablecrest-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "encrypts handheld backups before upload"
+    },
+    {
+      "name": "latest_blueharbor_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for BlueHarbor Marine",
+      "expected_path": "clients/blueharbor/contracts/2025-03-12-blueharbor-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/blueharbor/contracts/2025-03-12-blueharbor-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "blueharbor_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for BlueHarbor Marine",
+      "expected_path": "clients/blueharbor/contracts/2025-03-10-blueharbor-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/blueharbor/contracts/2025-03-10-blueharbor-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "limits guest network credentials to 24 hours"
+    },
+    {
+      "name": "latest_willow_contract",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "mtime"
+      ],
+      "query": "find the latest signed contract for Willow Foods",
+      "expected_path": "clients/willow/contracts/2025-02-27-willow-master-services-agreement-signed.txt",
+      "acceptable_paths": [
+        "clients/willow/contracts/2025-02-27-willow-master-services-agreement-signed.txt"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "willow_security_addendum",
+      "category": "contracts",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "content",
+        "snippet"
+      ],
+      "query": "find the signed security addendum for Willow Foods",
+      "expected_path": "clients/willow/contracts/2025-02-24-willow-security-addendum-signed.txt",
+      "acceptable_paths": [
+        "clients/willow/contracts/2025-02-24-willow-security-addendum-signed.txt"
+      ],
+      "top_k": 1,
+      "expected_snippet": "keeps freezer alarm history for 400 days"
+    },
+    {
+      "name": "cinder-harbor_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Cinder Harbor",
+      "expected_path": "operations/sites/cinder-harbor/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/cinder-harbor/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "oak-tide-4117"
+    },
+    {
+      "name": "cinder-harbor_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Cinder Harbor",
+      "expected_path": "operations/sites/cinder-harbor/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/cinder-harbor/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 12 seconds"
+    },
+    {
+      "name": "delta-yard_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Delta Yard",
+      "expected_path": "operations/sites/delta-yard/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/delta-yard/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "delta-knot-7721"
+    },
+    {
+      "name": "delta-yard_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Delta Yard",
+      "expected_path": "operations/sites/delta-yard/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/delta-yard/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 10 seconds"
+    },
+    {
+      "name": "marlin-port_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Marlin Port",
+      "expected_path": "operations/sites/marlin-port/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/marlin-port/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "marlin-sail-2284"
+    },
+    {
+      "name": "marlin-port_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Marlin Port",
+      "expected_path": "operations/sites/marlin-port/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/marlin-port/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 14 seconds"
+    },
+    {
+      "name": "north-quay_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for North Quay",
+      "expected_path": "operations/sites/north-quay/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/north-quay/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "quay-fog-9311"
+    },
+    {
+      "name": "north-quay_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at North Quay",
+      "expected_path": "operations/sites/north-quay/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/north-quay/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 11 seconds"
+    },
+    {
+      "name": "raven-terminal_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Raven Terminal",
+      "expected_path": "operations/sites/raven-terminal/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/raven-terminal/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "raven-shift-6612"
+    },
+    {
+      "name": "raven-terminal_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Raven Terminal",
+      "expected_path": "operations/sites/raven-terminal/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/raven-terminal/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 9 seconds"
+    },
+    {
+      "name": "sunset-depot_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Sunset Depot",
+      "expected_path": "operations/sites/sunset-depot/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/sunset-depot/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "sunset-lane-4920"
+    },
+    {
+      "name": "sunset-depot_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Sunset Depot",
+      "expected_path": "operations/sites/sunset-depot/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/sunset-depot/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 13 seconds"
+    },
+    {
+      "name": "granite-wharf_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Granite Wharf",
+      "expected_path": "operations/sites/granite-wharf/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/granite-wharf/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "granite-wake-5814"
+    },
+    {
+      "name": "granite-wharf_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Granite Wharf",
+      "expected_path": "operations/sites/granite-wharf/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/granite-wharf/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 15 seconds"
+    },
+    {
+      "name": "orchard-dock_wifi_password",
+      "category": "operations",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Orchard Dock",
+      "expected_path": "operations/sites/orchard-dock/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/orchard-dock/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "orchard-wave-7425"
+    },
+    {
+      "name": "orchard-dock_scanner_reset",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the procedure for resetting the dock 3 scanner firmware at Orchard Dock",
+      "expected_path": "operations/sites/orchard-dock/dock-3-scanner-maintenance.md",
+      "acceptable_paths": [
+        "operations/sites/orchard-dock/dock-3-scanner-maintenance.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Hold the side button for 8 seconds"
+    },
+    {
+      "name": "shipment_7718_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 7718 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-7718-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-7718-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "customs inspection on reefer seal"
+    },
+    {
+      "name": "shipment_7718_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 7718 pending customs inspection",
+      "expected_path": "operations/logistics/shipments/7718-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/7718-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "pending customs inspection"
+    },
+    {
+      "name": "shipment_7724_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 7724 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-7724-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-7724-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "carrier missed the bonded window"
+    },
+    {
+      "name": "shipment_7724_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 7724 awaiting bonded trailer swap",
+      "expected_path": "operations/logistics/shipments/7724-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/7724-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "awaiting bonded trailer swap"
+    },
+    {
+      "name": "shipment_7731_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 7731 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-7731-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-7731-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "temperature variance review"
+    },
+    {
+      "name": "shipment_7731_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 7731 held for temperature variance review",
+      "expected_path": "operations/logistics/shipments/7731-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/7731-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "held for temperature variance review"
+    },
+    {
+      "name": "shipment_8842_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 8842 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-8842-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-8842-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "reef unit battery failed during transfer"
+    },
+    {
+      "name": "shipment_8842_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 8842 awaiting reefer battery replacement",
+      "expected_path": "operations/logistics/shipments/8842-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/8842-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "awaiting reefer battery replacement"
+    },
+    {
+      "name": "shipment_8850_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 8850 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-8850-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-8850-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "staging lane congestion"
+    },
+    {
+      "name": "shipment_8850_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 8850 queued in overflow staging lane",
+      "expected_path": "operations/logistics/shipments/8850-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/8850-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "queued in overflow staging lane"
+    },
+    {
+      "name": "shipment_8861_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 8861 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-8861-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-8861-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "manifest mismatch with supplier labels"
+    },
+    {
+      "name": "shipment_8861_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 8861 waiting on corrected supplier manifest",
+      "expected_path": "operations/logistics/shipments/8861-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/8861-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "waiting on corrected supplier manifest"
+    },
+    {
+      "name": "shipment_8873_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 8873 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-8873-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-8873-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "gate appointment was rescheduled"
+    },
+    {
+      "name": "shipment_8873_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 8873 assigned to revised gate appointment",
+      "expected_path": "operations/logistics/shipments/8873-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/8873-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "assigned to revised gate appointment"
+    },
+    {
+      "name": "shipment_8890_delay_reason",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "disambiguation"
+      ],
+      "query": "find the document that explains why shipment 8890 was delayed",
+      "expected_path": "operations/logistics/incidents/shipment-8890-root-cause.md",
+      "acceptable_paths": [
+        "operations/logistics/incidents/shipment-8890-root-cause.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "export paperwork missing pallet counts"
+    },
+    {
+      "name": "shipment_8890_status_log",
+      "category": "operations",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the shipment log showing 8890 blocked on pallet count correction",
+      "expected_path": "operations/logistics/shipments/8890-status-log.txt",
+      "acceptable_paths": [
+        "operations/logistics/shipments/8890-status-log.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "blocked on pallet count correction"
+    },
+    {
+      "name": "atlas_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Atlas",
+      "expected_path": "projects/atlas/project-brief.md",
+      "acceptable_paths": [
+        "projects/atlas/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Mara Chen"
+    },
+    {
+      "name": "atlas_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Atlas",
+      "expected_path": "projects/atlas/status/2025-03-14-weekly-update.md",
+      "acceptable_paths": [
+        "projects/atlas/status/2025-03-14-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "atlas_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Atlas",
+      "expected_path": "projects/atlas/status/2025-03-14-weekly-update.md",
+      "acceptable_paths": [
+        "projects/atlas/status/2025-03-14-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "dock label printer calibration"
+    },
+    {
+      "name": "lantern_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Lantern",
+      "expected_path": "projects/lantern/project-brief.md",
+      "acceptable_paths": [
+        "projects/lantern/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Priya Solanki"
+    },
+    {
+      "name": "lantern_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Lantern",
+      "expected_path": "projects/lantern/status/2025-03-13-weekly-update.md",
+      "acceptable_paths": [
+        "projects/lantern/status/2025-03-13-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "lantern_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Lantern",
+      "expected_path": "projects/lantern/status/2025-03-13-weekly-update.md",
+      "acceptable_paths": [
+        "projects/lantern/status/2025-03-13-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "rollback checkpoint signoff"
+    },
+    {
+      "name": "frostline_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Frostline",
+      "expected_path": "projects/frostline/project-brief.md",
+      "acceptable_paths": [
+        "projects/frostline/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Jonas Reed"
+    },
+    {
+      "name": "frostline_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Frostline",
+      "expected_path": "projects/frostline/status/2025-03-12-weekly-update.md",
+      "acceptable_paths": [
+        "projects/frostline/status/2025-03-12-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "frostline_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Frostline",
+      "expected_path": "projects/frostline/status/2025-03-12-weekly-update.md",
+      "acceptable_paths": [
+        "projects/frostline/status/2025-03-12-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "cold aisle repeater placement"
+    },
+    {
+      "name": "northstar_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Northstar",
+      "expected_path": "projects/northstar/project-brief.md",
+      "acceptable_paths": [
+        "projects/northstar/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Elena Park"
+    },
+    {
+      "name": "northstar_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Northstar",
+      "expected_path": "projects/northstar/status/2025-03-11-weekly-update.md",
+      "acceptable_paths": [
+        "projects/northstar/status/2025-03-11-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "northstar_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Northstar",
+      "expected_path": "projects/northstar/status/2025-03-11-weekly-update.md",
+      "acceptable_paths": [
+        "projects/northstar/status/2025-03-11-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "dispatch screen latency in yard office"
+    },
+    {
+      "name": "keel_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Keel",
+      "expected_path": "projects/keel/project-brief.md",
+      "acceptable_paths": [
+        "projects/keel/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Owen Hart"
+    },
+    {
+      "name": "keel_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Keel",
+      "expected_path": "projects/keel/status/2025-03-10-weekly-update.md",
+      "acceptable_paths": [
+        "projects/keel/status/2025-03-10-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "keel_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Keel",
+      "expected_path": "projects/keel/status/2025-03-10-weekly-update.md",
+      "acceptable_paths": [
+        "projects/keel/status/2025-03-10-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "slotting map export is stale"
+    },
+    {
+      "name": "tidewatch_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Tidewatch",
+      "expected_path": "projects/tidewatch/project-brief.md",
+      "acceptable_paths": [
+        "projects/tidewatch/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Lina Gomez"
+    },
+    {
+      "name": "tidewatch_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Tidewatch",
+      "expected_path": "projects/tidewatch/status/2025-03-09-weekly-update.md",
+      "acceptable_paths": [
+        "projects/tidewatch/status/2025-03-09-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "tidewatch_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Tidewatch",
+      "expected_path": "projects/tidewatch/status/2025-03-09-weekly-update.md",
+      "acceptable_paths": [
+        "projects/tidewatch/status/2025-03-09-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "camera retention policy approval"
+    },
+    {
+      "name": "embergrid_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project EmberGrid",
+      "expected_path": "projects/embergrid/project-brief.md",
+      "acceptable_paths": [
+        "projects/embergrid/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Noah Bishop"
+    },
+    {
+      "name": "embergrid_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for EmberGrid",
+      "expected_path": "projects/embergrid/status/2025-03-08-weekly-update.md",
+      "acceptable_paths": [
+        "projects/embergrid/status/2025-03-08-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "embergrid_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project EmberGrid",
+      "expected_path": "projects/embergrid/status/2025-03-08-weekly-update.md",
+      "acceptable_paths": [
+        "projects/embergrid/status/2025-03-08-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "handoff queue backpressure"
+    },
+    {
+      "name": "quartz_owner",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of project Quartz",
+      "expected_path": "projects/quartz/project-brief.md",
+      "acceptable_paths": [
+        "projects/quartz/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Tessa Nwosu"
+    },
+    {
+      "name": "quartz_latest_update",
+      "category": "projects",
+      "difficulty": "easy",
+      "capability_tags": [
+        "path",
+        "mtime"
+      ],
+      "query": "find the latest weekly update for Quartz",
+      "expected_path": "projects/quartz/status/2025-03-15-weekly-update.md",
+      "acceptable_paths": [
+        "projects/quartz/status/2025-03-15-weekly-update.md"
+      ],
+      "top_k": 1
+    },
+    {
+      "name": "quartz_blocker",
+      "category": "projects",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the file describing the blocker for project Quartz",
+      "expected_path": "projects/quartz/status/2025-03-15-weekly-update.md",
+      "acceptable_paths": [
+        "projects/quartz/status/2025-03-15-weekly-update.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "duplicate invoice match tuning"
+    },
+    {
+      "name": "meridian_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Elena Park as the primary contact",
+      "expected_path": "finance/vendors/meridian/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/meridian/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Elena Park"
+    },
+    {
+      "name": "meridian_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning outbound pallet transfer",
+      "expected_path": "finance/vendors/meridian/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/meridian/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "outbound pallet transfer"
+    },
+    {
+      "name": "northcoast_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Jules Duran as the primary contact",
+      "expected_path": "finance/vendors/northcoast/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/northcoast/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Jules Duran"
+    },
+    {
+      "name": "northcoast_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning weekend lane recovery",
+      "expected_path": "finance/vendors/northcoast/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/northcoast/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "weekend lane recovery"
+    },
+    {
+      "name": "bluepeak_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Dev Patel as the primary contact",
+      "expected_path": "finance/vendors/bluepeak/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/bluepeak/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Dev Patel"
+    },
+    {
+      "name": "bluepeak_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning firmware refresh labor",
+      "expected_path": "finance/vendors/bluepeak/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/bluepeak/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "firmware refresh labor"
+    },
+    {
+      "name": "ironline_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Lina Gomez as the primary contact",
+      "expected_path": "finance/vendors/ironline/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/ironline/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Lina Gomez"
+    },
+    {
+      "name": "ironline_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning expedited trailer reposition",
+      "expected_path": "finance/vendors/ironline/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/ironline/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "expedited trailer reposition"
+    },
+    {
+      "name": "summit_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Mara Chen as the primary contact",
+      "expected_path": "finance/vendors/summit/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/summit/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Mara Chen"
+    },
+    {
+      "name": "summit_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning industrial ribbon replenishment",
+      "expected_path": "finance/vendors/summit/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/summit/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "industrial ribbon replenishment"
+    },
+    {
+      "name": "coldtrail_primary_contact",
+      "category": "finance",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the vendor profile that lists Priya Solanki as the primary contact",
+      "expected_path": "finance/vendors/coldtrail/profile.md",
+      "acceptable_paths": [
+        "finance/vendors/coldtrail/profile.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Primary contact: Priya Solanki"
+    },
+    {
+      "name": "coldtrail_invoice_line_item",
+      "category": "finance",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the invoice mentioning compressor field inspection",
+      "expected_path": "finance/vendors/coldtrail/invoices/2025-02-invoice.txt",
+      "acceptable_paths": [
+        "finance/vendors/coldtrail/invoices/2025-02-invoice.txt"
+      ],
+      "top_k": 3,
+      "expected_snippet": "compressor field inspection"
+    },
+    {
+      "name": "data-platform-analyst_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the data platform analyst role",
+      "expected_path": "hr/hiring/data-platform-analyst-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/data-platform-analyst-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Imani Holt"
+    },
+    {
+      "name": "analytics-engineer_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the analytics engineer role",
+      "expected_path": "hr/hiring/analytics-engineer-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/analytics-engineer-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: no"
+    },
+    {
+      "name": "warehouse-supervisor_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the warehouse supervisor role",
+      "expected_path": "hr/hiring/warehouse-supervisor-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/warehouse-supervisor-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Mateo Ruiz"
+    },
+    {
+      "name": "fleet-analyst_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the fleet analyst role",
+      "expected_path": "hr/hiring/fleet-analyst-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/fleet-analyst-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Simone Vega"
+    },
+    {
+      "name": "site-reliability-manager_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the site reliability manager role",
+      "expected_path": "hr/hiring/site-reliability-manager-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/site-reliability-manager-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Devika Shah"
+    },
+    {
+      "name": "operations-program-manager_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the operations program manager role",
+      "expected_path": "hr/hiring/operations-program-manager-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/operations-program-manager-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Graham Lee"
+    },
+    {
+      "name": "security-analyst_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the security analyst role",
+      "expected_path": "hr/hiring/security-analyst-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/security-analyst-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Amara Cole"
+    },
+    {
+      "name": "inventory-planner_recommendation",
+      "category": "hr",
+      "difficulty": "medium",
+      "capability_tags": [
+        "content",
+        "snippet",
+        "disambiguation"
+      ],
+      "query": "find the scorecard for the inventory planner role",
+      "expected_path": "hr/hiring/inventory-planner-scorecard.md",
+      "acceptable_paths": [
+        "hr/hiring/inventory-planner-scorecard.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Recommend hire: Keenan Fox"
+    },
+    {
+      "name": "jules-duran_role",
+      "category": "people",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the directory file that lists Jules Duran's role",
+      "expected_path": "people/team-directory.md",
+      "acceptable_paths": [
+        "people/team-directory.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Jules Duran: logistics coordinator"
+    },
+    {
+      "name": "dev-patel_role",
+      "category": "people",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the directory file that lists Dev Patel's role",
+      "expected_path": "people/team-directory.md",
+      "acceptable_paths": [
+        "people/team-directory.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Dev Patel: director of operations systems"
+    },
+    {
+      "name": "mara-chen_role",
+      "category": "people",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the directory file that lists Mara Chen's role",
+      "expected_path": "people/team-directory.md",
+      "acceptable_paths": [
+        "people/team-directory.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Mara Chen: program director"
+    },
+    {
+      "name": "elena-park_role",
+      "category": "people",
+      "difficulty": "easy",
+      "capability_tags": [
+        "content",
+        "snippet"
+      ],
+      "query": "find the directory file that lists Elena Park's role",
+      "expected_path": "people/team-directory.md",
+      "acceptable_paths": [
+        "people/team-directory.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Elena Park: vendor operations lead"
+    },
+    {
+      "name": "harbor7_wifi_password",
+      "category": "aliases",
+      "difficulty": "hard",
+      "capability_tags": [
+        "hidden",
+        "multi_file",
+        "snippet"
+      ],
+      "query": "find the file with the Wi-Fi password for Harbor 7",
+      "expected_path": "operations/sites/cinder-harbor/network-runbook.md",
+      "acceptable_paths": [
+        "operations/sites/cinder-harbor/network-runbook.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "oak-tide-4117"
+    },
+    {
+      "name": "beacon_program_owner",
+      "category": "aliases",
+      "difficulty": "hard",
+      "capability_tags": [
+        "hidden",
+        "multi_file",
+        "snippet"
+      ],
+      "query": "find the file that names the owner of the Beacon program",
+      "expected_path": "projects/atlas/project-brief.md",
+      "acceptable_paths": [
+        "projects/atlas/project-brief.md"
+      ],
+      "top_k": 3,
+      "expected_snippet": "Owner: Mara Chen"
+    },
+    {
+      "name": "no_mistral_contract",
+      "category": "negative",
+      "difficulty": "medium",
+      "capability_tags": [
+        "no_answer"
+      ],
+      "query": "find the signed contract for Mistral Bio",
+      "expected_path": null,
+      "acceptable_paths": [],
+      "top_k": 1
+    },
+    {
+      "name": "no_april_bonus_sheet",
+      "category": "negative",
+      "difficulty": "medium",
+      "capability_tags": [
+        "no_answer"
+      ],
+      "query": "find the spreadsheet with April bonus payouts",
+      "expected_path": null,
+      "acceptable_paths": [],
+      "top_k": 1
+    }
+  ]
+}

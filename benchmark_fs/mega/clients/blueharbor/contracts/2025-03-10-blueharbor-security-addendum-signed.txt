@@ -1,0 +1,5 @@
+Client: BlueHarbor Marine
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-03-10
+            Control note: limits guest network credentials to 24 hours.

@@ -1,0 +1,5 @@
+Client: Ember Freight
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-03-01
+            Control note: stores badge audit events for 365 days.

@@ -1,0 +1,3 @@
+Vendor: Summit Packaging
+            Invoice month: 2025-02
+            Line item: industrial ribbon replenishment

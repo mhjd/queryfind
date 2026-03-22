@@ -99,6 +99,9 @@ class TargetSummary:
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BENCHMARK_MANIFEST_PATH = REPO_ROOT / "benchmark_fs" / "full_manifest.json"
+EXTENDED_BENCHMARK_MANIFEST_PATH = REPO_ROOT / "benchmark_fs" / "extended_manifest.json"
+MEGA_BENCHMARK_MANIFEST_PATH = REPO_ROOT / "benchmark_fs" / "mega_manifest.json"
+HANDMADE_BENCHMARK_MANIFEST_PATH = REPO_ROOT / "benchmark_fs" / "handmade100_manifest.json"
 DEFAULT_REPORT_DIR = REPO_ROOT / ".queryfind" / "benchmarks"
 
 
@@ -137,6 +140,7 @@ def normalize_corpus_metadata(manifest: BenchmarkManifest) -> None:
 
 def run_benchmark(
     *,
+    manifest_path: Path = BENCHMARK_MANIFEST_PATH,
     models: list[str] | None = None,
     include_heuristic: bool = False,
     case_names: set[str] | None = None,
@@ -146,7 +150,7 @@ def run_benchmark(
     report_dir: Path = DEFAULT_REPORT_DIR,
     quiet: bool = False,
 ) -> tuple[BenchmarkManifest, list[CaseRunResult], list[TargetSummary], Path]:
-    manifest = load_manifest()
+    manifest = load_manifest(manifest_path)
     normalize_corpus_metadata(manifest)
 
     targets: list[tuple[str, bool, str | None]] = []
@@ -156,7 +160,7 @@ def run_benchmark(
     for model in selected_models:
         targets.append((model, True, model))
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
     report_dir.mkdir(parents=True, exist_ok=True)
     logger = RunLogger(report_dir / f"benchmark-{timestamp}.log", echo=not quiet)
     all_results: list[CaseRunResult] = []
@@ -398,6 +402,15 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description="Run the full QueryFind benchmark suite.")
     parser.add_argument(
+        "--manifest",
+        default=str(BENCHMARK_MANIFEST_PATH),
+        help=(
+            "Benchmark manifest to load. "
+            f"Use {EXTENDED_BENCHMARK_MANIFEST_PATH.relative_to(REPO_ROOT)} for the 40-case suite "
+            f"or {HANDMADE_BENCHMARK_MANIFEST_PATH.relative_to(REPO_ROOT)} for the handcrafted 100-case suite."
+        ),
+    )
+    parser.add_argument(
         "--model",
         action="append",
         default=None,
@@ -420,9 +433,10 @@ def main(argv: list[str] | None = None) -> int:
         help="Directory for benchmark logs and JSON reports.",
     )
     args = parser.parse_args(argv)
+    manifest_path = Path(args.manifest).expanduser().resolve()
 
     if args.list_cases:
-        manifest = load_manifest()
+        manifest = load_manifest(manifest_path)
         for case in manifest.cases:
             print(f"{case.name} [{case.category}/{case.difficulty}] {case.query}")
         return 0
@@ -432,6 +446,7 @@ def main(argv: list[str] | None = None) -> int:
         selected_models = []
 
     manifest, results, summaries, report_path = run_benchmark(
+        manifest_path=manifest_path,
         models=selected_models,
         include_heuristic=bool(args.heuristic_baseline),
         case_names=set(args.case) if args.case else None,

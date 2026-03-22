@@ -1,0 +1,5 @@
+Client: Sablecrest Health
+            Document: Security Addendum
+            Status: signed
+            Signed date: 2025-02-22
+            Control note: encrypts handheld backups before upload.

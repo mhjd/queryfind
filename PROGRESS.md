@@ -75,3 +75,5 @@
 - Rebuilt the handcrafted suite after the layout changes; it now has 125 cases over 138 files.
 - Ran the full handcrafted 125-case suite on `glm-4.7-flash:latest`: 90/125 success, 82/125 top-1, 84/112 snippet success, 2/2 no-answer, MRR 0.7587.
 - Ran the full handcrafted 125-case suite on `qwen3-coder:30b`: 75/125 success, 68/125 top-1, 70/112 snippet success, 2/2 no-answer, MRR 0.6333.
+- Ran the handmade personal-only slice on `devstral-small-2:latest`: 20/25 success, 18/25 top-1, 20/25 snippet success, MRR 0.9200, but with very high median latency around 94.5s.
+- Added `scripts/run_personal_model_benchmarks.sh` plus a Make target to queue the personal-only benchmark sequentially for `qwen3.5:27b`, `glm-4.7-flash:latest`, and `qwen3-coder:30b` without interactive monitoring.

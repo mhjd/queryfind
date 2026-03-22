@@ -1,0 +1,3 @@
+Shipment: 8873
+            Current status: assigned to revised gate appointment
+            Last note: escalation remains open.
