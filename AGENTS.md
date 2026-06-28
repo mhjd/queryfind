@@ -14,17 +14,17 @@
 - Avoid noisy library logs by default, but keep them easy to enable.
 
 # Project files
-## PROJECT.md 
+## context/PROJECT.md
 Explain the project.
 
-## ARCHITECTURE.md
+## context/ARCHITECTURE.md
 Keep a concise map of the codebase and the role of each important file/folder.
 Update it when files are added, moved, removed, or when responsibilities change significantly.
 
-## STATE.md
+## context/STATE.md
 Maintain the current status, active tasks, next steps, and enough context for another agent to continue the work.
 
-## PROGRESS.md
+## context/PROGRESS.md
 Append significant progress and important findings only. Never rewrite history.
 
 ## Makefile
@@ -38,4 +38,4 @@ The README should explain:
 - what the project is useful for
 - the minimum install requirements and setup steps
 - the main ways to run it
-Do not turn it into an internal design document; keep architecture details in `ARCHITECTURE.md` and product scope in `PROJECT.md`.
+Do not turn it into an internal design document; keep architecture details in `context/ARCHITECTURE.md` and product scope in `context/PROJECT.md`.

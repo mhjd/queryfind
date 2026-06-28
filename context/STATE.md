@@ -13,6 +13,7 @@ The original 19-case suite remains available in `benchmark_fs/full_manifest.json
 Two larger suites now exist as well: the generated `benchmark_fs/mega_manifest.json` and the handcrafted `benchmark_fs/handmade100_manifest.json`, which now contains 125 cases over a deliberately messy mixed company/personal filesystem.
 There is now a dedicated batch helper for the 25-case handmade personal slice in `scripts/run_personal_model_benchmarks.sh`.
 The prompt-tuning loop under `permanent_tasks_loop/` is now pinned to `glm-4.7-flash:latest`, requires general wording rather than benchmark-shaped examples, and keeps an append-only revision log in `permanent_tasks_loop/improving_system_prompt_history.md`.
+Internal project context now lives under `context/`, while `AGENTS.md`, `README.md`, and `Makefile` remain at the repository root.
 Latest benchmark results with the current prompt:
 
 - `qwen3-coder:30b`: 14/19 on the original suite and 28/40 on the extended suite
